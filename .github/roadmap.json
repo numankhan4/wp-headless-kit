@@ -1,0 +1,202 @@
+[
+  {
+    "area": "tooling",
+    "title": "Commit package-lock.json and use npm ci",
+    "body": "## Goal\nRun `npm install` to generate `package-lock.json` and commit it so installs are reproducible.\n\n## Acceptance criteria\n- `package-lock.json` is committed\n- `npm ci && npm test` passes\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "tooling",
+    "title": "Add ESLint flat config with typescript-eslint",
+    "body": "## Goal\nAdd `eslint.config.js` using `typescript-eslint` recommended-type-checked rules and an `npm run lint` script. Fix any findings.\n\n## Acceptance criteria\n- `npm run lint` passes with zero errors\n- Config ignores `dist/`\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "tooling",
+    "title": "Add Prettier config and format script",
+    "body": "## Goal\nAdd `.prettierrc` (printWidth 120, double quotes) plus `format` and `format:check` scripts, then format the repo.\n\n## Acceptance criteria\n- `npm run format:check` passes\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "tooling",
+    "title": "Add test coverage script",
+    "body": "## Goal\nAdd `npm run coverage` using `node --test --experimental-test-coverage` over the compiled tests.\n\n## Acceptance criteria\n- Script prints a coverage summary\n- Documented in README Development section\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "docs",
+    "title": "Add CHANGELOG.md following Keep a Changelog",
+    "body": "## Goal\nCreate CHANGELOG.md with an Unreleased section summarising features that exist today.\n\n## Acceptance criteria\n- CHANGELOG.md exists and follows keepachangelog.com format\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Add paginate() async iterator for collections",
+    "body": "## Goal\nAdd `wp.paginate(\"/wp/v2/posts\", params)` that yields every item across all pages using `x-wp-totalpages`.\n\n## Acceptance criteria\n- Stops after the last page\n- Respects `per_page`\n- Tests with a mocked multi-page fetch\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Retry with exponential backoff on 429 and 5xx",
+    "body": "## Goal\nAdd `retry?: { retries: number; baseDelayMs: number }` to `WPClientOptions`. Respect the `Retry-After` header.\n\n## Acceptance criteria\n- No retry on 4xx other than 429\n- Tests use fake timers or a tiny delay\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Request timeout via AbortSignal",
+    "body": "## Goal\nAdd a `timeoutMs` option. Abort slow requests and throw a `WPError` with code `timeout`.\n\n## Acceptance criteria\n- Composes with a caller-provided signal\n- Test covers the timeout path\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Application Passwords auth helper",
+    "body": "## Goal\nExport `basicAuth(username, appPassword)` that returns an Authorization header, and document how to use it with WPClient to fetch drafts.\n\n## Acceptance criteria\n- Works in Node and edge runtimes (no Buffer dependency)\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Generic getCollection<T>() for custom post types",
+    "body": "## Goal\nAdd `getCollection<T>(restBase, params)` and `getItemBySlug<T>(restBase, slug)` for CPTs registered with `show_in_rest`.\n\n## Acceptance criteria\n- Existing getPosts/getPages reuse it\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Search endpoint support",
+    "body": "## Goal\nAdd `search(term, { type, subtype, per_page })` for `/wp/v2/search` with typed results.\n\n## Acceptance criteria\n- Typed `WPSearchResult`\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Users/author endpoint with avatars",
+    "body": "## Goal\nAdd `getUser(id)` and a `WPUser` type including `avatar_urls`.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Embedded data helpers",
+    "body": "## Goal\nAdd `getFeaturedImage(post)`, `getAuthor(post)` and `getTerms(post, taxonomy)` that read from `_embedded` safely.\n\n## Acceptance criteria\n- Return null when `_embed` was not requested\n- Tests with fixture JSON\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Navigation menu support",
+    "body": "## Goal\nAdd `getMenuItems(menuId)` for `/wp/v2/menu-items` and a `buildMenuTree(items)` helper that nests by `parent`.\n\n## Acceptance criteria\n- Tree builder is pure and tested\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Optional in-memory TTL cache",
+    "body": "## Goal\nAdd a `cache?: { ttlMs: number; max?: number }` option with an LRU map keyed by URL.\n\n## Acceptance criteria\n- Cache hits skip fetch\n- Expired entries refetch\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "client",
+    "title": "Minimal WPGraphQL client",
+    "body": "## Goal\nAdd `WPGraphQLClient` with `query<T>(document, variables)`. Surface GraphQL errors as `WPError`.\n\n## Acceptance criteria\n- Tests with mocked fetch\n- README section\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "seo",
+    "title": "JSON-LD from Yoast schema graph",
+    "body": "## Goal\nExport `yoastJsonLd(yoast)` that returns a safe string for a `<script type=\"application/ld+json\">` tag (escape `</script`).\n\n## Acceptance criteria\n- XSS-safe escaping test\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "seo",
+    "title": "XML sitemap generator",
+    "body": "## Goal\nExport `buildSitemap(entries: { loc; lastmod?; changefreq?; priority? }[])` that returns XML.\n\n## Acceptance criteria\n- Escapes XML entities\n- Validates against a snapshot in tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "seo",
+    "title": "RSS 2.0 feed generator",
+    "body": "## Goal\nExport `buildRssFeed({ title, link, description, items })` using posts' title, link, date and excerpt.\n\n## Acceptance criteria\n- Escaped and CDATA-safe\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "seo",
+    "title": "Rank Math head support",
+    "body": "## Goal\nParse the HTML from Rank Math's `/rankmath/v1/getHead` into the same `PageMetadata` shape.\n\n## Acceptance criteria\n- Handles title, description, canonical, og:* and twitter:* tags\n- Tests with fixture HTML\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "seo",
+    "title": "Breadcrumbs from Yoast schema",
+    "body": "## Goal\nExport `yoastBreadcrumbs(yoast)` that returns `{ name, url }[]` from the BreadcrumbList node.\n\n## Acceptance criteria\n- Works with rewriteOrigin\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "seo",
+    "title": "robots.txt builder",
+    "body": "## Goal\nExport `buildRobotsTxt({ rules, sitemaps })`.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "Safe core/image renderer",
+    "body": "## Goal\nAdd an HTML renderer for `core/image` that outputs width, height, `loading=\"lazy\"` and escaped alt text.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "core/embed renderer with lite YouTube/Vimeo",
+    "body": "## Goal\nRender `core/embed` for YouTube and Vimeo as a privacy-friendly thumbnail link. Fall back to the saved HTML for other providers.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "Table of contents extractor",
+    "body": "## Goal\nExport `extractToc(blocks)` that returns heading `{ level, text, id }` and adds slug ids to headings without one.\n\n## Acceptance criteria\n- Unique slugs for duplicate headings\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "core/gallery renderer",
+    "body": "## Goal\nRender `core/gallery` as a semantic figure grid with image renderers for children.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "Allowlist HTML sanitizer",
+    "body": "## Goal\nExport `sanitizeHtml(html, { allowTags?, allowAttrs? })`, a small zero-dep allowlist sanitizer that strips scripts, event handlers and `javascript:` URLs.\n\n## Acceptance criteria\n- Tests cover common XSS vectors\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "Rewrite internal links in content",
+    "body": "## Goal\nExport `rewriteLinks(html, { from, to })` that rewrites href/src from the CMS origin to the front-end origin and leaves `wp-content/uploads` alone unless configured.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "Image CDN URL rewriter",
+    "body": "## Goal\nExport `rewriteImageUrls(html, (url) => string)` for srcset/src so images can be served from a CDN.\n\n## Acceptance criteria\n- Handles srcset lists\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "blocks",
+    "title": "Parser edge-case tests",
+    "body": "## Goal\nAdd tests for nested same-name blocks, unicode attrs, escaped `--` in JSON, and unclosed blocks.\n\n## Acceptance criteria\n- Fix any parser bugs found\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "nextjs",
+    "title": "Revalidation webhook helper",
+    "body": "## Goal\nAdd `src/adapters/next/revalidate.ts` with `verifyWebhook(req, secret)` and `pathsForPost(post)` (no Next import in core).\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "nextjs",
+    "title": "Draft preview helper",
+    "body": "## Goal\nAdd a helper that fetches a draft by id with auth for Next.js draft mode, and document it.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "nextjs",
+    "title": "generateStaticParams helper",
+    "body": "## Goal\nExport `allSlugs(wp, restBase)` that uses paginate() to return `{ slug }[]`.\n\n## Acceptance criteria\n- Tests\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "nextjs",
+    "title": "React block renderer adapter",
+    "body": "## Goal\nAdd `src/adapters/react` with a `renderBlocksToReact(blocks, components)` wrapper. Use React as an optional peer dependency and keep the types generic.\n\n## Acceptance criteria\n- Core stays dependency-free\n- Tests with a fake createElement\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "nextjs",
+    "title": "Example Next.js blog in examples/",
+    "body": "## Goal\nAdd `examples/nextjs-blog` (its own package.json, not built in CI) with a list and detail page using the kit.\n\n## Acceptance criteria\n- README explains how to run it against any WP site\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "docs",
+    "title": "API reference for WPClient",
+    "body": "## Goal\nAdd `docs/client.md` that documents every public method with examples.\n\n## Acceptance criteria\n- Linked from README\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "docs",
+    "title": "Guide: SEO with Yoast in Next.js",
+    "body": "## Goal\nAdd `docs/seo-nextjs.md` covering metadata, JSON-LD and sitemaps.\n\n## Acceptance criteria\n- Linked from README\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "docs",
+    "title": "Guide: rendering Gutenberg blocks",
+    "body": "## Goal\nAdd `docs/blocks.md` explaining parse/render, custom renderers and sanitization.\n\n## Acceptance criteria\n- Linked from README\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "tooling",
+    "title": "parseBlocks benchmark script",
+    "body": "## Goal\nAdd `bench/parse.bench.ts` and `npm run bench` using `performance.now()` over a large fixture.\n\n## Acceptance criteria\n- Prints ops/sec\n- `npm run typecheck && npm test` pass"
+  },
+  {
+    "area": "tooling",
+    "title": "Generate API docs with TypeDoc",
+    "body": "## Goal\nAdd TypeDoc as a dev dependency with `npm run docs:api` that outputs to `docs/api` (gitignored).\n\n## Acceptance criteria\n- Script works\n- `npm run typecheck && npm test` pass"
+  }
+]

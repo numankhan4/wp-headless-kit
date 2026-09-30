@@ -1,0 +1,57 @@
+name: Weekly digest
+
+# Fridays: open an issue assigned to the owner summarising the week.
+# GitHub emails you about the assignment, so this doubles as the weekly report.
+
+on:
+  schedule:
+    - cron: "53 12 * * 5" # Fridays, 17:53 Pakistan time
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: read
+
+jobs:
+  digest:
+    if: vars.AUTOMATION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Build and post digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          since=$(date -u -d '7 days ago' +%Y-%m-%d)
+          today=$(date -u +%Y-%m-%d)
+          gh label create digest --color BFD4F2 --repo "$REPO" 2>/dev/null || true
+          {
+            echo "## Week ending $today"
+            echo
+            echo "### ✅ Merged"
+            gh pr list --repo "$REPO" --state merged --search "merged:>=$since" --limit 50 \
+              --json number,title,labels --jq '.[] | "- #\(.number) \(.title) \([.labels[].name] | map(select(.=="low-risk")) | if length>0 then "_(auto-merged)_" else "" end)"'
+            echo
+            echo "### 👀 Waiting for your review"
+            gh pr list --repo "$REPO" --state open --label needs-review --json number,title,url \
+              --jq '.[] | "- [ ] #\(.number) \(.title)"'
+            echo
+            echo "### ⚠️ Needs attention (failing tests or blocked)"
+            gh pr list --repo "$REPO" --state open --label needs-attention --json number,title --jq '.[] | "- #\(.number) \(.title)"'
+            gh issue list --repo "$REPO" --state open --label blocked --json number,title --jq '.[] | "- #\(.number) \(.title)"'
+            echo
+            echo "### 📋 Backlog"
+            echo "$(gh issue list --repo "$REPO" --state open --label roadmap --limit 300 --json number --jq length) open roadmap issues."
+            echo
+            echo "_Pause everything: Settings → Secrets and variables → Actions → Variables → set \`AUTOMATION_ENABLED\` to \`false\`._"
+          } > digest.md
+
+          for n in $(gh issue list --repo "$REPO" --label digest --state open --json number --jq '.[].number'); do
+            gh issue close "$n" --repo "$REPO" --comment "Superseded by this week's digest."
+          done
+          gh issue create --repo "$REPO" --title "Weekly digest — $today" --body-file digest.md \
+            --label digest --assignee "${{ github.repository_owner }}"

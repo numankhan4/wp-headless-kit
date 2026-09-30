@@ -1,0 +1,163 @@
+name: Daily dev
+
+# Once a day: pick the next roadmap issue, let Claude implement it on a branch,
+# run the tests, and open a PR authored by the repo owner (via BOT_PAT).
+# Guardrails:
+#   - kill switch: repo variable AUTOMATION_ENABLED must be "true"
+#   - only issues labeled `roadmap` (only maintainers can label) and not `blocked`/`in-progress`
+#   - at most MAX_OPEN_PRS automated PRs open at once (default 3)
+#   - Claude can only read/edit files and run npm scripts; git and GitHub are handled by this workflow
+#   - changes under .github/ are discarded
+#   - failing tests => PR is opened as a draft and labeled needs-attention
+
+on:
+  schedule:
+    - cron: "17 5 * * *" # 10:17 Pakistan time
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Issue number to work on (optional)"
+        required: false
+
+concurrency:
+  group: daily-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  implement:
+    if: vars.AUTOMATION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ secrets.BOT_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_PAT }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Pick next issue
+        id: pick
+        shell: bash
+        run: |
+          set -euo pipefail
+          max="${{ vars.MAX_OPEN_PRS || 3 }}"
+          open=$(gh pr list --label automated --state open --json number --jq 'length')
+          if [ "$open" -ge "$max" ]; then
+            echo "Skipping: $open automated PRs already open (limit $max). Review/merge some first."
+            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+
+          if [ -n "${{ github.event.inputs.issue }}" ]; then
+            num="${{ github.event.inputs.issue }}"
+          else
+            num=$(gh issue list --label roadmap --state open --limit 200 --json number,labels \
+              --jq '[.[] | select([.labels[].name] | index("blocked") or index("in-progress") | not)] | sort_by(.number) | .[0].number // empty')
+          fi
+          if [ -z "$num" ]; then
+            echo "No eligible roadmap issues. The weekly planner will add more."
+            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+
+          gh issue view "$num" --json labels --jq '[.labels[].name] | index("roadmap")' | grep -qv null \
+            || { echo "Issue #$num is not labeled roadmap; refusing."; exit 1; }
+
+          title=$(gh issue view "$num" --json title --jq .title)
+          slug=$(echo "$title" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//g' | cut -c1-40)
+          mkdir -p .auto
+          gh issue view "$num" --json number,title,body \
+            --jq '"# Issue #\(.number): \(.title)\n\n\(.body)"' > .auto/ISSUE.md
+          {
+            echo "skip=false"
+            echo "number=$num"
+            echo "branch=auto/issue-$num-$slug"
+          } >> "$GITHUB_OUTPUT"
+          echo "title<<EOF" >> "$GITHUB_OUTPUT"; echo "$title" >> "$GITHUB_OUTPUT"; echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        if: steps.pick.outputs.skip == 'false'
+        run: if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+
+      - name: Create branch
+        if: steps.pick.outputs.skip == 'false'
+        run: |
+          git checkout -B "${{ steps.pick.outputs.branch }}"
+          gh issue edit "${{ steps.pick.outputs.number }}" --add-label in-progress
+
+      - name: Implement with Claude
+        if: steps.pick.outputs.skip == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are working in the repository ${{ github.repository }}.
+            Read CLAUDE.md first and follow it exactly.
+            Your task is described in .auto/ISSUE.md. Implement it completely.
+
+            Rules:
+            - Keep the change focused on this one issue. Small, reviewable diff.
+            - Add or update tests under test/ for any behaviour change.
+            - Update README.md or docs/ if the public API changes.
+            - Run `npm run typecheck` and `npm test` and fix failures before finishing.
+            - Do NOT edit anything under .github/ and do NOT run git commands.
+            - When done, write .auto/PR.md with this exact format:
+                line 1: a Conventional Commit subject, max 72 chars (e.g. "feat(client): add retry with backoff")
+                line 2: blank
+                rest: PR description in Markdown with sections "## What", "## Why", "## How to test".
+            - If the issue is unclear or impossible, write .auto/BLOCKED.md explaining why and make no other changes.
+          claude_args: |
+            --model sonnet
+            --max-turns 40
+            --allowedTools Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(npm run build),Bash(npm run typecheck),Bash(npm test),Bash(npm install:*),Bash(node:*)
+
+      - name: Verify, commit and open PR
+        if: steps.pick.outputs.skip == 'false'
+        shell: bash
+        run: |
+          set -uo pipefail
+          num="${{ steps.pick.outputs.number }}"
+          branch="${{ steps.pick.outputs.branch }}"
+
+          if [ -f .auto/BLOCKED.md ]; then
+            gh issue comment "$num" --body-file .auto/BLOCKED.md
+            gh issue edit "$num" --add-label blocked --remove-label in-progress
+            exit 0
+          fi
+
+          # Guardrail: never ship workflow or automation changes from the agent.
+          git checkout -- .github 2>/dev/null || true
+          git clean -fdq .github 2>/dev/null || true
+
+          if [ -z "$(git status --porcelain -- . ':!.auto')" ]; then
+            gh issue comment "$num" --body "Daily dev run produced no changes for this issue. Marking as blocked for a human look."
+            gh issue edit "$num" --add-label blocked --remove-label in-progress
+            exit 0
+          fi
+
+          if npm run typecheck && npm test; then tests=pass; else tests=fail; fi
+
+          subject=$(head -n1 .auto/PR.md 2>/dev/null || true)
+          [ -z "$subject" ] && subject="chore: ${{ steps.pick.outputs.title }}"
+          tail -n +3 .auto/PR.md > .auto/body.md 2>/dev/null || echo "Implements #$num." > .auto/body.md
+          printf '\n\nCloses #%s\n\n---\n_Implemented by the daily Claude workflow; reviewed by the PR review workflow. Tests: **%s**._\n' "$num" "$tests" >> .auto/body.md
+
+          git config user.name "${{ vars.GIT_AUTHOR_NAME || 'Numan Ul Haq' }}"
+          git config user.email "${{ vars.GIT_AUTHOR_EMAIL }}"
+          git add -A -- . ':!.auto'
+          git commit -m "$subject" -m "Closes #$num" -m "Co-authored-by: Claude <noreply@anthropic.com>"
+          git push -u origin "$branch" --force-with-lease
+
+          flags=(--label automated)
+          if [ "$tests" = fail ]; then flags+=(--draft --label needs-attention); fi
+          gh pr create --base main --head "$branch" --title "$subject" --body-file .auto/body.md "${flags[@]}"
