@@ -23,6 +23,12 @@ export function renderBlocks<T>(blocks: ParsedBlock[], options: RenderOptions<T>
   });
 }
 
-/** String renderer that keeps WordPress's saved HTML and inlines children. */
-export const passthroughHtml: BlockRenderer<string> = (block, children) =>
-  children.length ? block.innerHTML.trim() + children.join("") : block.innerHTML;
+/**
+ * String renderer that keeps WordPress's saved HTML and places each rendered
+ * child back where it appeared, so wrappers such as columns keep their children.
+ */
+export const passthroughHtml: BlockRenderer<string> = (block, children) => {
+  if (!children.length) return block.innerHTML;
+  let i = 0;
+  return block.innerContent.map((part) => (part === null ? (children[i++] ?? "") : part)).join("");
+};

@@ -11,6 +11,11 @@ export interface ParsedBlock {
   innerBlocks: ParsedBlock[];
   /** HTML directly inside this block, with inner blocks removed. */
   innerHTML: string;
+  /**
+   * HTML fragments interleaved with `null` placeholders marking where each inner
+   * block sits (same contract as WordPress's parser), so wrappers can be rebuilt.
+   */
+  innerContent: Array<string | null>;
 }
 
 const TOKEN = /<!--\s+(\/)?wp:([a-z][a-z0-9_-]*\/)?([a-z][a-z0-9_-]*)\s+(\{[\s\S]*?\}\s+)?(\/)?-->/g;
@@ -20,7 +25,7 @@ function normalizeName(ns: string | undefined, name: string): string {
 }
 
 function freeform(html: string): ParsedBlock | null {
-  return html.trim() ? { blockName: null, attrs: {}, innerBlocks: [], innerHTML: html } : null;
+  return html.trim() ? { blockName: null, attrs: {}, innerBlocks: [], innerHTML: html, innerContent: [html] } : null;
 }
 
 function parseAttrs(raw: string | undefined): Record<string, unknown> {
@@ -33,7 +38,7 @@ function parseAttrs(raw: string | undefined): Record<string, unknown> {
 }
 
 export function parseBlocks(document: string): ParsedBlock[] {
-  const root: ParsedBlock = { blockName: "__root__", attrs: {}, innerBlocks: [], innerHTML: "" };
+  const root: ParsedBlock = { blockName: "__root__", attrs: {}, innerBlocks: [], innerHTML: "", innerContent: [] };
   const stack: ParsedBlock[] = [root];
   let cursor = 0;
 
@@ -45,6 +50,7 @@ export function parseBlocks(document: string): ParsedBlock[] {
       if (block) root.innerBlocks.push(block);
     } else {
       parent.innerHTML += html;
+      parent.innerContent.push(html);
     }
   };
 
@@ -66,8 +72,10 @@ export function parseBlocks(document: string): ParsedBlock[] {
       continue;
     }
 
-    const block: ParsedBlock = { blockName, attrs: parseAttrs(attrsRaw?.trim()), innerBlocks: [], innerHTML: "" };
-    stack[stack.length - 1]!.innerBlocks.push(block);
+    const block: ParsedBlock = { blockName, attrs: parseAttrs(attrsRaw?.trim()), innerBlocks: [], innerHTML: "", innerContent: [] };
+    const parent = stack[stack.length - 1]!;
+    parent.innerBlocks.push(block);
+    if (parent !== root) parent.innerContent.push(null);
     if (!selfClosing) stack.push(block);
   }
   appendHtml(document.slice(cursor));

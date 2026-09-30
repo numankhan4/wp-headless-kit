@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>wp-headless-kit — typed toolkit for headless WordPress</title>
+  <meta name="description" content="Zero-dependency TypeScript toolkit for headless WordPress: REST client, Yoast SEO metadata, and Gutenberg block parsing. Live playground." />
+  <meta property="og:title" content="wp-headless-kit" />
+  <meta property="og:description" content="Typed, zero-dependency toolkit for headless WordPress front ends. Try it live." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230369a1'/><text x='16' y='22' font-family='monospace' font-size='15' font-weight='700' fill='white' text-anchor='middle'>wp</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-inner">
+      <a class="brand" href="#"><span class="logo">wp</span> wp-headless-kit</a>
+      <nav>
+        <a href="#playground">Playground</a>
+        <a href="#blocks">Blocks</a>
+        <a href="#activity">Activity</a>
+        <a class="gh" href="https://github.com/numankhan4/wp-headless-kit">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <p class="eyebrow">TypeScript · 0 runtime dependencies · MIT</p>
+      <h1>Headless WordPress,<br /><span>typed end to end.</span></h1>
+      <p class="lede">A small toolkit for Next.js, Astro or plain Node front ends on WordPress: a typed REST client, Yoast SEO → framework metadata, and a Gutenberg block parser with pluggable renderers.</p>
+      <div class="install"><code>npm install github:numankhan4/wp-headless-kit</code><button class="copy" data-copy="npm install github:numankhan4/wp-headless-kit" aria-label="Copy install command">Copy</button></div>
+      <div class="stats" id="stats">
+        <div><strong id="stat-tests">15+</strong><span>tests</span></div>
+        <div><strong id="stat-prs">—</strong><span>PRs merged</span></div>
+        <div><strong id="stat-open">—</strong><span>on the roadmap</span></div>
+      </div>
+    </section>
+
+    <section id="playground" class="wrap section">
+      <div class="section-head">
+        <h2>Live playground</h2>
+        <p>These calls run in your browser, using the same library build that's on <code>main</code>. Choose a site or enter any public WordPress URL.</p>
+      </div>
+
+      <form class="fetch" id="fetch-form">
+        <div class="presets" role="group" aria-label="Example sites">
+          <button type="button" class="chip" data-url="https://wordpress.org/news">WordPress News</button>
+          <button type="button" class="chip" data-url="https://yoast.com">Yoast (has SEO data)</button>
+          <button type="button" class="chip" data-url="https://make.wordpress.org/core">Make WP Core</button>
+        </div>
+        <div class="row">
+          <input id="site-url" type="url" required value="https://wordpress.org/news" aria-label="WordPress site URL" />
+          <input id="search" type="search" placeholder="Search (optional)" aria-label="Search posts" />
+          <button type="submit" class="primary">Fetch posts</button>
+        </div>
+        <pre class="code-line" id="code-line"></pre>
+      </form>
+
+      <div class="pg-grid">
+        <div class="panel list-panel">
+          <div class="panel-head"><span>Posts</span><span class="muted" id="pagination"></span></div>
+          <ol id="post-list" class="post-list"><li class="empty">Choose a site to load its posts.</li></ol>
+          <div class="pager">
+            <button id="prev" disabled>← Prev</button>
+            <button id="next" disabled>Next →</button>
+          </div>
+        </div>
+
+        <div class="panel detail-panel">
+          <div class="tabs" role="tablist">
+            <button role="tab" class="tab active" data-tab="preview">Preview</button>
+            <button role="tab" class="tab" data-tab="seo">SEO metadata</button>
+            <button role="tab" class="tab" data-tab="json">Raw JSON</button>
+          </div>
+          <div class="tab-body" id="tab-preview">
+            <p class="empty">Pick a post to preview it.</p>
+          </div>
+          <div class="tab-body hidden" id="tab-seo"><p class="empty">Pick a post to see the output of <code>yoastToMetadata()</code>.</p></div>
+          <div class="tab-body hidden" id="tab-json"><p class="empty">Pick a post.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="blocks" class="wrap section">
+      <div class="section-head">
+        <h2>Gutenberg block parser</h2>
+        <p>Edit the serialized block markup. <code>parseBlocks()</code> builds the tree, and <code>renderBlocks()</code> renders it using a custom renderer for <code>acme/cta</code>.</p>
+      </div>
+      <div class="blocks-grid">
+        <div class="panel">
+          <div class="panel-head"><span>Input — post_content</span></div>
+          <textarea id="blocks-input" spellcheck="false"></textarea>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span>Block tree</span><span class="muted" id="block-count"></span></div>
+          <div id="block-tree" class="tree"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span>Rendered HTML</span></div>
+          <iframe id="blocks-preview" title="Rendered blocks" sandbox=""></iframe>
+        </div>
+      </div>
+    </section>
+
+    <section id="activity" class="wrap section">
+      <div class="section-head">
+        <h2>Built in the open, every day</h2>
+        <p>Each day a GitHub Action picks the next roadmap issue. Claude implements it with tests and opens a PR, and an AI review comments on it. CI must pass before anything merges. Docs and test changes merge automatically; I review and merge everything else.</p>
+      </div>
+      <div class="flow">
+        <div><b>1</b><span>Roadmap issue</span></div>
+        <div><b>2</b><span>Claude implements and tests it</span></div>
+        <div><b>3</b><span>AI review, then CI</span></div>
+        <div><b>4</b><span>Auto-merge, or my review</span></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>Latest pull requests</span><a class="muted" href="https://github.com/numankhan4/wp-headless-kit/pulls?q=is%3Apr">View all →</a></div>
+        <ul id="pr-list" class="pr-list"><li class="empty">Loading…</li></ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <span>MIT © <a href="https://www.numanulhaq.com">Numan Ul Haq</a></span>
+    <span><a href="https://github.com/numankhan4/wp-headless-kit">Source</a> · <a href="https://github.com/numankhan4/wp-headless-kit/blob/main/ROADMAP.md">Roadmap</a></span>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

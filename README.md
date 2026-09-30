@@ -4,6 +4,8 @@
 ![license](https://img.shields.io/badge/license-MIT-38bdf8)
 ![deps](https://img.shields.io/badge/runtime%20deps-0-0ea5e9)
 
+**[▶ Live playground](https://numankhan4.github.io/wp-headless-kit/)**: fetch posts from any WordPress site, see the generated SEO metadata, and parse Gutenberg blocks in your browser.
+
 Typed, zero-dependency building blocks for **headless WordPress** front ends (Next.js, Astro, Remix, or plain Node):
 
 - **`WPClient`**: a small typed client for the WP REST API, with pagination headers, slug lookups and typed errors.
@@ -76,9 +78,16 @@ npm test
 
 See [ROADMAP.md](ROADMAP.md) for what's coming.
 
-## How this repo is maintained
+## How this repo is built
 
-Development runs on a daily cadence with AI assistance. Each day a GitHub Action picks the next roadmap issue and implements it with Claude on a branch. It opens a PR, and a second workflow reviews it. Docs and test-only changes auto-merge after CI passes; everything else is reviewed and merged by the maintainer. Commits carry a `Co-authored-by: Claude` trailer.
+This project doubles as a demo of an AI-assisted engineering workflow I designed:
+
+- **Daily:** a GitHub Action picks the next roadmap issue, Claude implements it with tests, and opens a PR.
+- **Every PR:** an AI review posts inline feedback; CI must pass before anything merges.
+- **Risk-based merging:** docs/tests-only changes auto-merge; code, dependency and workflow changes are reviewed and merged by me.
+- **Guardrails:** a cap on open PRs, protected workflow files, and a kill switch.
+
+The workflows are in [`.github/workflows`](.github/workflows) if you want to reuse the setup.
 
 ## License
 

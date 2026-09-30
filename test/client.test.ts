@@ -45,6 +45,22 @@ test("non-OK responses throw WPError with the WordPress error code", async () =>
   });
 });
 
+test("default fetch is not called with the client as `this` (browser Illegal invocation)", async () => {
+  const original = globalThis.fetch;
+  let receiver: unknown = "unset";
+  globalThis.fetch = function (this: unknown) {
+    receiver = this;
+    return Promise.resolve(new Response("[]", { headers: { "content-type": "application/json" } }));
+  } as typeof fetch;
+  try {
+    const wp = new WPClient({ baseUrl: "https://example.com" });
+    await wp.getPosts();
+    assert.ok(!(receiver instanceof WPClient), "fetch must not be invoked with the client as receiver");
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
 test("constructor requires baseUrl", () => {
   assert.throws(() => new WPClient({ baseUrl: "" }), /baseUrl is required/);
 });

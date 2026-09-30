@@ -52,7 +52,9 @@ export class WPClient {
     this.root = options.baseUrl.replace(/\/+$/, "") + "/wp-json";
     const f = options.fetch ?? (globalThis.fetch as FetchLike | undefined);
     if (!f) throw new Error("WPClient: no fetch implementation available");
-    this.fetchImpl = f;
+    // Call through a wrapper so browsers don't throw "Illegal invocation" when
+    // the native fetch is invoked with `this` bound to the client.
+    this.fetchImpl = options.fetch ? f : (input, init) => globalThis.fetch(input, init);
   }
 
   /** Low-level GET against any REST route, e.g. `request("/wp/v2/posts")`. */
