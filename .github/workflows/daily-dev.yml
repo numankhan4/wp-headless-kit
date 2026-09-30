@@ -119,7 +119,7 @@ jobs:
           claude_args: |
             --model sonnet
             --max-turns 25
-            --allowedTools Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(npm run build),Bash(npm run typecheck),Bash(npm test),Bash(npm install:*),Bash(node:*)
+            --allowedTools "Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(npm:*),Bash(npx tsc:*),Bash(node:*)"
 
       - name: Verify, commit and open PR
         if: steps.pick.outputs.skip == 'false'
