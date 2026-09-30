@@ -12,7 +12,7 @@ name: Daily dev
 
 on:
   schedule:
-    - cron: "17 5 * * *" # 10:17 Pakistan time
+    - cron: "17 5 * * 1-5" # 10:17 Pakistan time, Mon-Fri
   workflow_dispatch:
     inputs:
       issue:
@@ -98,7 +98,7 @@ jobs:
         if: steps.pick.outputs.skip == 'false'
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             You are working in the repository ${{ github.repository }}.
@@ -118,7 +118,7 @@ jobs:
             - If the issue is unclear or impossible, write .auto/BLOCKED.md explaining why and make no other changes.
           claude_args: |
             --model sonnet
-            --max-turns 40
+            --max-turns 25
             --allowedTools Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(npm run build),Bash(npm run typecheck),Bash(npm test),Bash(npm install:*),Bash(node:*)
 
       - name: Verify, commit and open PR
