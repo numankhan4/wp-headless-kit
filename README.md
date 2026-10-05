@@ -57,17 +57,17 @@ export default async function Post({ params }: { params: { slug: string } }) {
 
 ## API
 
-| Export | Description |
-| --- | --- |
-| `new WPClient({ baseUrl, fetch?, headers?, requestInit? })` | Create a client. |
-| `getPosts / getPages / getCategories / getTags(params)` | Paginated lists: `{ items, total, totalPages, page }`. |
-| `getPostBySlug / getPageBySlug(slug)` | Single item or `null`. |
-| `getMedia(id)` | Media item. |
-| `request(route, params)` | Call any REST route. |
-| `WPError` | Thrown on non-2xx responses, with `status`, `code` and `url`. |
-| `yoastToMetadata(yoast, { rewriteOrigin? })` | Yoast to framework-neutral metadata. |
-| `parseBlocks(html)` | Gutenberg block tree. |
-| `renderBlocks(blocks, { renderers, fallback })` | Render the tree to strings, React nodes, etc. |
+| Export                                                      | Description                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------------- |
+| `new WPClient({ baseUrl, fetch?, headers?, requestInit? })` | Create a client.                                              |
+| `getPosts / getPages / getCategories / getTags(params)`     | Paginated lists: `{ items, total, totalPages, page }`.        |
+| `getPostBySlug / getPageBySlug(slug)`                       | Single item or `null`.                                        |
+| `getMedia(id)`                                              | Media item.                                                   |
+| `request(route, params)`                                    | Call any REST route.                                          |
+| `WPError`                                                   | Thrown on non-2xx responses, with `status`, `code` and `url`. |
+| `yoastToMetadata(yoast, { rewriteOrigin? })`                | Yoast to framework-neutral metadata.                          |
+| `parseBlocks(html)`                                         | Gutenberg block tree.                                         |
+| `renderBlocks(blocks, { renderers, fallback })`             | Render the tree to strings, React nodes, etc.                 |
 
 ## Development
 

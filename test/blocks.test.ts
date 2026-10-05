@@ -32,9 +32,15 @@ test("parseBlocks builds a nested tree with attrs and namespaces", () => {
 
 test("passthroughHtml keeps inner blocks inside their wrapper markup", () => {
   const html = renderBlocks(parseBlocks(doc), { renderers: {}, fallback: passthroughHtml }).join("");
-  assert.match(html, /<div class="wp-block-columns">\s*<div class="wp-block-column">\s*<p>Left<\/p>\s*<\/div>\s*<\/div>/);
+  assert.match(
+    html,
+    /<div class="wp-block-columns">\s*<div class="wp-block-column">\s*<p>Left<\/p>\s*<\/div>\s*<\/div>/,
+  );
   const columns = parseBlocks(doc)[1]!;
-  assert.deepEqual(columns.innerContent.map((c) => (c === null ? null : "html")), ["html", null, "html"]);
+  assert.deepEqual(
+    columns.innerContent.map((c) => (c === null ? null : "html")),
+    ["html", null, "html"],
+  );
 });
 
 test("parseBlocks tolerates invalid JSON attributes", () => {
