@@ -15,12 +15,17 @@ function mockFetch(body: unknown, init: { status?: number; headers?: Record<stri
 }
 
 test("toQueryString serialises arrays, booleans and skips empties", () => {
-  assert.equal(toQueryString({ per_page: 5, categories: [1, 2], _embed: true, search: undefined, tags: [] }), "?per_page=5&categories=1%2C2&_embed=1");
+  assert.equal(
+    toQueryString({ per_page: 5, categories: [1, 2], _embed: true, search: undefined, tags: [] }),
+    "?per_page=5&categories=1%2C2&_embed=1",
+  );
   assert.equal(toQueryString({}), "");
 });
 
 test("getPosts builds the URL and reads pagination headers", async () => {
-  const { fetch, calls } = mockFetch([{ id: 1 }, { id: 2 }], { headers: { "x-wp-total": "12", "x-wp-totalpages": "6" } });
+  const { fetch, calls } = mockFetch([{ id: 1 }, { id: 2 }], {
+    headers: { "x-wp-total": "12", "x-wp-totalpages": "6" },
+  });
   const wp = new WPClient({ baseUrl: "https://example.com/", fetch });
   const res = await wp.getPosts({ per_page: 2, page: 3 });
   assert.equal(calls[0], "https://example.com/wp-json/wp/v2/posts?per_page=2&page=3");

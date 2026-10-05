@@ -72,7 +72,13 @@ export function parseBlocks(document: string): ParsedBlock[] {
       continue;
     }
 
-    const block: ParsedBlock = { blockName, attrs: parseAttrs(attrsRaw?.trim()), innerBlocks: [], innerHTML: "", innerContent: [] };
+    const block: ParsedBlock = {
+      blockName,
+      attrs: parseAttrs(attrsRaw?.trim()),
+      innerBlocks: [],
+      innerHTML: "",
+      innerContent: [],
+    };
     const parent = stack[stack.length - 1]!;
     parent.innerBlocks.push(block);
     if (parent !== root) parent.innerContent.push(null);

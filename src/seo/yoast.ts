@@ -54,7 +54,9 @@ export function yoastToMetadata(yoast: YoastHeadJson | undefined, opts: Metadata
     ? { index: yoast.robots.index !== "noindex", follow: yoast.robots.follow !== "nofollow" }
     : undefined;
 
-  const images = yoast.og_image?.map((img) => clean({ url: rewrite(img.url, opts) ?? img.url, width: img.width, height: img.height })!);
+  const images = yoast.og_image?.map((img) =>
+    clean({ url: rewrite(img.url, opts) ?? img.url, width: img.width, height: img.height })!,
+  );
 
   const meta: PageMetadata = {
     title: text(yoast.title),
