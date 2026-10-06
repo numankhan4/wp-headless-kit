@@ -74,6 +74,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
 ```bash
 npm install
 npm test
+npm run coverage # run tests and print a coverage summary
 ```
 
 See [ROADMAP.md](ROADMAP.md) for what's coming.
