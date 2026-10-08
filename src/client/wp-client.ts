@@ -89,6 +89,18 @@ export class WPClient {
     };
   }
 
+  /** Async-iterate every item of a collection route, fetching pages until `x-wp-totalpages` is reached. */
+  async *paginate<T = unknown>(route: string, params: ListParams = {}): AsyncGenerator<T, void, undefined> {
+    let page = params.page ?? 1;
+    while (true) {
+      const { data, headers } = await this.request<T[]>(route, { ...params, page });
+      yield* data;
+      const totalPages = Number(headers.get("x-wp-totalpages") ?? 1);
+      if (data.length === 0 || page >= totalPages) return;
+      page++;
+    }
+  }
+
   getPosts(params?: ListParams): Promise<Paginated<WPPost>> {
     return this.list<WPPost>("/wp/v2/posts", params);
   }

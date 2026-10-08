@@ -63,6 +63,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | `getPosts / getPages / getCategories / getTags(params)`     | Paginated lists: `{ items, total, totalPages, page }`.        |
 | `getPostBySlug / getPageBySlug(slug)`                       | Single item or `null`.                                        |
 | `getMedia(id)`                                              | Media item.                                                   |
+| `paginate(route, params)`                                   | Async iterator over every item across all pages.              |
 | `request(route, params)`                                    | Call any REST route.                                          |
 | `WPError`                                                   | Thrown on non-2xx responses, with `status`, `code` and `url`. |
 | `yoastToMetadata(yoast, { rewriteOrigin? })`                | Yoast to framework-neutral metadata.                          |
