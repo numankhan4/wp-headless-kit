@@ -66,6 +66,23 @@ test("default fetch is not called with the client as `this` (browser Illegal inv
   }
 });
 
+test("paginate yields items across all pages and stops after the last", async () => {
+  const calls: string[] = [];
+  const fetch = async (url: string) => {
+    calls.push(url);
+    const page = Number(new URL(url).searchParams.get("page"));
+    return new Response(JSON.stringify([{ id: page * 2 - 1 }, { id: page * 2 }]), {
+      headers: { "x-wp-totalpages": "3" },
+    });
+  };
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch });
+  const ids: number[] = [];
+  for await (const post of wp.paginate<{ id: number }>("/wp/v2/posts", { per_page: 2 })) ids.push(post.id);
+  assert.deepEqual(ids, [1, 2, 3, 4, 5, 6]);
+  assert.equal(calls.length, 3);
+  assert.ok(calls.every((c) => c.includes("per_page=2")));
+});
+
 test("constructor requires baseUrl", () => {
   assert.throws(() => new WPClient({ baseUrl: "" }), /baseUrl is required/);
 });
