@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- REST client: opt-in `retry` option (`{ retries, baseDelayMs }`) retrying 429 and 5xx responses with exponential backoff and `Retry-After` support.
 - REST client: `WPClient` with `getPosts`, `getPages`, `getCategories`, `getTags`, `getMedia`, `getPostBySlug` and `getPageBySlug`, pagination metadata via `Paginated<T>`, injectable `fetch` (`FetchLike`), `WPError` for failed requests and `toQueryString` for list parameters.
 - Typed WordPress REST models: `WPPost`, `WPPage`, `WPTerm`, `WPMedia`, `ListParams` and `YoastHeadJson`.
 - SEO: `yoastToMetadata` converts Yoast head JSON into page metadata (`PageMetadata`, `MetadataOptions`).

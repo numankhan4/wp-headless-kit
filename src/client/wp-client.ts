@@ -11,6 +11,8 @@ export interface WPClientOptions {
   headers?: Record<string, string>;
   /** Default `RequestInit` merged into every call (e.g. `{ next: { revalidate: 60 } }` in Next.js). */
   requestInit?: RequestInit;
+  /** Retry 429 and 5xx responses up to `retries` times, waiting `baseDelayMs * 2^attempt` (or `Retry-After` when sent). */
+  retry?: { retries: number; baseDelayMs: number };
 }
 
 export class WPError extends Error {
@@ -23,6 +25,15 @@ export class WPError extends Error {
     super(message);
     this.name = "WPError";
   }
+}
+
+/** Parse a `Retry-After` header (seconds or HTTP date) into milliseconds, or `undefined` if absent/invalid. */
+export function parseRetryAfter(value: string | null, now: number = Date.now()): number | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed) * 1000;
+  const date = Date.parse(trimmed);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - now);
 }
 
 /** Serialise list params the way the WP REST API expects (arrays as comma lists). */
@@ -60,10 +71,19 @@ export class WPClient {
   /** Low-level GET against any REST route, e.g. `request("/wp/v2/posts")`. */
   async request<T>(route: string, params?: ListParams): Promise<{ data: T; headers: Headers }> {
     const url = `${this.root}${route.startsWith("/") ? route : `/${route}`}${toQueryString(params)}`;
-    const res = await this.fetchImpl(url, {
-      ...this.options.requestInit,
-      headers: { Accept: "application/json", ...this.options.headers },
-    });
+    const retries = Math.max(0, this.options.retry?.retries ?? 0);
+    const baseDelayMs = this.options.retry?.baseDelayMs ?? 0;
+    let res: Response;
+    for (let attempt = 0; ; attempt++) {
+      res = await this.fetchImpl(url, {
+        ...this.options.requestInit,
+        headers: { Accept: "application/json", ...this.options.headers },
+      });
+      if (res.ok || attempt >= retries || !(res.status === 429 || res.status >= 500)) break;
+      const delay = parseRetryAfter(res.headers.get("retry-after")) ?? baseDelayMs * 2 ** attempt;
+      await res.body?.cancel().catch(() => undefined);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
     if (!res.ok) {
       let code: string | undefined;
       let message = `WordPress request failed with ${res.status}`;
