@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { WPClient, WPError, toQueryString } from "../src/index.js";
+import { WPClient, WPError, parseRetryAfter, toQueryString } from "../src/index.js";
 
 function mockFetch(body: unknown, init: { status?: number; headers?: Record<string, string> } = {}) {
   const calls: string[] = [];
@@ -85,4 +85,59 @@ test("paginate yields items across all pages and stops after the last", async ()
 
 test("constructor requires baseUrl", () => {
   assert.throws(() => new WPClient({ baseUrl: "" }), /baseUrl is required/);
+});
+
+type Step = { status: number; headers?: Record<string, string> };
+
+function sequenceFetch(steps: Step[]) {
+  let calls = 0;
+  const fetch = async () => {
+    const step = steps[Math.min(calls++, steps.length - 1)]!;
+    const body = step.status < 400 ? [{ id: 1 }] : { message: "nope" };
+    return new Response(JSON.stringify(body), { status: step.status, headers: step.headers });
+  };
+  return { fetch, count: () => calls };
+}
+
+test("retry: retries 5xx then succeeds", async () => {
+  const { fetch, count } = sequenceFetch([{ status: 503 }, { status: 500 }, { status: 200 }]);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch, retry: { retries: 3, baseDelayMs: 1 } });
+  const res = await wp.getPosts();
+  assert.equal(res.items.length, 1);
+  assert.equal(count(), 3);
+});
+
+test("retry: retries 429 honouring Retry-After", async () => {
+  const { fetch, count } = sequenceFetch([{ status: 429, headers: { "retry-after": "0" } }, { status: 200 }]);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch, retry: { retries: 1, baseDelayMs: 10_000 } });
+  await wp.getPosts();
+  assert.equal(count(), 2);
+});
+
+test("retry: does not retry other 4xx", async () => {
+  const { fetch, count } = sequenceFetch([{ status: 404 }, { status: 200 }]);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch, retry: { retries: 3, baseDelayMs: 1 } });
+  await assert.rejects(wp.getPosts(), (e: unknown) => e instanceof WPError && e.status === 404);
+  assert.equal(count(), 1);
+});
+
+test("retry: throws WPError after retries are exhausted", async () => {
+  const { fetch, count } = sequenceFetch([{ status: 502 }]);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch, retry: { retries: 2, baseDelayMs: 1 } });
+  await assert.rejects(wp.getPosts(), (e: unknown) => e instanceof WPError && e.status === 502);
+  assert.equal(count(), 3);
+});
+
+test("retry: disabled by default", async () => {
+  const { fetch, count } = sequenceFetch([{ status: 503 }, { status: 200 }]);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch });
+  await assert.rejects(wp.getPosts(), WPError);
+  assert.equal(count(), 1);
+});
+
+test("parseRetryAfter handles seconds, dates and junk", () => {
+  assert.equal(parseRetryAfter("2"), 2000);
+  assert.equal(parseRetryAfter(new Date(5000).toUTCString(), 1000), 4000);
+  assert.equal(parseRetryAfter("soon"), undefined);
+  assert.equal(parseRetryAfter(null), undefined);
 });
