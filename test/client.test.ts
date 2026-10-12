@@ -135,6 +135,37 @@ test("retry: disabled by default", async () => {
   assert.equal(count(), 1);
 });
 
+function hangingFetch() {
+  return (_url: string, init?: RequestInit) =>
+    new Promise<Response>((_resolve, reject) => {
+      init?.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+    });
+}
+
+test("timeoutMs: throws WPError with code timeout", async () => {
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch: hangingFetch(), timeoutMs: 20 });
+  await assert.rejects(wp.getPosts(), (e: unknown) => e instanceof WPError && e.code === "timeout");
+});
+
+test("timeoutMs: caller abort is propagated, not reported as timeout", async () => {
+  const ctrl = new AbortController();
+  const wp = new WPClient({
+    baseUrl: "https://example.com",
+    fetch: hangingFetch(),
+    timeoutMs: 5000,
+    requestInit: { signal: ctrl.signal },
+  });
+  const p = wp.getPosts();
+  ctrl.abort(new Error("stop"));
+  await assert.rejects(p, (e: unknown) => !(e instanceof WPError) && (e as Error).message === "stop");
+});
+
+test("timeoutMs: fast responses are unaffected", async () => {
+  const { fetch } = mockFetch([]);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch, timeoutMs: 1000 });
+  assert.deepEqual((await wp.getPosts()).items, []);
+});
+
 test("parseRetryAfter handles seconds, dates and junk", () => {
   assert.equal(parseRetryAfter("2"), 2000);
   assert.equal(parseRetryAfter(new Date(5000).toUTCString(), 1000), 4000);

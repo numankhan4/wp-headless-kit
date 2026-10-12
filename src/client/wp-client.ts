@@ -13,6 +13,8 @@ export interface WPClientOptions {
   requestInit?: RequestInit;
   /** Retry 429 and 5xx responses up to `retries` times, waiting `baseDelayMs * 2^attempt` (or `Retry-After` when sent). */
   retry?: { retries: number; baseDelayMs: number };
+  /** Abort each attempt after this many ms and throw a `WPError` with code `timeout`. Composes with `requestInit.signal`. */
+  timeoutMs?: number;
 }
 
 export class WPError extends Error {
@@ -68,6 +70,33 @@ export class WPClient {
     this.fetchImpl = options.fetch ? f : (input, init) => globalThis.fetch(input, init);
   }
 
+  private async fetchWithTimeout(url: string): Promise<Response> {
+    const init: RequestInit = {
+      ...this.options.requestInit,
+      headers: { Accept: "application/json", ...this.options.headers },
+    };
+    const timeoutMs = this.options.timeoutMs;
+    if (!timeoutMs || timeoutMs <= 0) return this.fetchImpl(url, init);
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+    const caller = init.signal;
+    init.signal = caller ? AbortSignal.any([caller, controller.signal]) : controller.signal;
+    try {
+      return await this.fetchImpl(url, init);
+    } catch (err) {
+      if (timedOut && !caller?.aborted) {
+        throw new WPError(`WordPress request timed out after ${timeoutMs}ms`, 0, "timeout", url);
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   /** Low-level GET against any REST route, e.g. `request("/wp/v2/posts")`. */
   async request<T>(route: string, params?: ListParams): Promise<{ data: T; headers: Headers }> {
     const url = `${this.root}${route.startsWith("/") ? route : `/${route}`}${toQueryString(params)}`;
@@ -75,10 +104,7 @@ export class WPClient {
     const baseDelayMs = this.options.retry?.baseDelayMs ?? 0;
     let res: Response;
     for (let attempt = 0; ; attempt++) {
-      res = await this.fetchImpl(url, {
-        ...this.options.requestInit,
-        headers: { Accept: "application/json", ...this.options.headers },
-      });
+      res = await this.fetchWithTimeout(url);
       if (res.ok || attempt >= retries || !(res.status === 429 || res.status >= 500)) break;
       const delay = parseRetryAfter(res.headers.get("retry-after")) ?? baseDelayMs * 2 ** attempt;
       await res.body?.cancel().catch(() => undefined);
