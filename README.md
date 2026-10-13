@@ -60,6 +60,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | Export                                                      | Description                                                   |
 | ----------------------------------------------------------- | ------------------------------------------------------------- |
 | `new WPClient({ baseUrl, fetch?, headers?, requestInit?, retry?, timeoutMs? })` | Create a client. `timeoutMs` aborts each attempt that takes longer and throws `WPError` with code `timeout` (composes with `requestInit.signal`). `retry: { retries, baseDelayMs }` retries 429/5xx with exponential backoff and honours `Retry-After`. |
+| `basicAuth(username, appPassword)`                          | `Authorization` header value for Application Passwords (see below). |
 | `getPosts / getPages / getCategories / getTags(params)`     | Paginated lists: `{ items, total, totalPages, page }`.        |
 | `getPostBySlug / getPageBySlug(slug)`                       | Single item or `null`.                                        |
 | `getMedia(id)`                                              | Media item.                                                   |
@@ -69,6 +70,21 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | `yoastToMetadata(yoast, { rewriteOrigin? })`                | Yoast to framework-neutral metadata.                          |
 | `parseBlocks(html)`                                         | Gutenberg block tree.                                         |
 | `renderBlocks(blocks, { renderers, fallback })`             | Render the tree to strings, React nodes, etc.                 |
+
+### Fetching drafts with Application Passwords
+
+Create an Application Password in your WordPress profile, then pass `basicAuth` as a header. It uses `TextEncoder` and `btoa`, so it works in Node and edge runtimes. Keep credentials server-side.
+
+```ts
+import { WPClient, basicAuth } from "wp-headless-kit";
+
+const wp = new WPClient({
+  baseUrl: "https://example.com",
+  headers: { Authorization: basicAuth(process.env.WP_USER!, process.env.WP_APP_PASSWORD!) },
+});
+
+const { items: drafts } = await wp.getPosts({ status: "draft" });
+```
 
 ## Development
 

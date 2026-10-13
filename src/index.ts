@@ -1,5 +1,6 @@
 export * from "./client/types.js";
 export { WPClient, WPError, parseRetryAfter, toQueryString } from "./client/wp-client.js";
+export { basicAuth } from "./client/auth.js";
 export type { FetchLike, WPClientOptions } from "./client/wp-client.js";
 export { yoastToMetadata } from "./seo/yoast.js";
 export type { PageMetadata, MetadataOptions } from "./seo/yoast.js";
