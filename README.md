@@ -63,6 +63,8 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | `basicAuth(username, appPassword)`                          | `Authorization` header value for Application Passwords (see below). |
 | `getPosts / getPages / getCategories / getTags(params)`     | Paginated lists: `{ items, total, totalPages, page }`.        |
 | `getPostBySlug / getPageBySlug(slug)`                       | Single item or `null`.                                        |
+| `getCollection<T>(restBase, params)`                        | Paginated list for any custom post type, e.g. `"books"`.      |
+| `getItemBySlug<T>(restBase, slug, params?)`                 | Single custom post type item by slug, or `null`.              |
 | `getMedia(id)`                                              | Media item.                                                   |
 | `paginate(route, params)`                                   | Async iterator over every item across all pages.              |
 | `request(route, params)`                                    | Call any REST route.                                          |

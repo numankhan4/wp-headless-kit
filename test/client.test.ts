@@ -172,3 +172,21 @@ test("parseRetryAfter handles seconds, dates and junk", () => {
   assert.equal(parseRetryAfter("soon"), undefined);
   assert.equal(parseRetryAfter(null), undefined);
 });
+
+test("getCollection hits the custom post type route", async () => {
+  const { fetch, calls } = mockFetch([{ id: 7 }], { headers: { "x-wp-total": "1", "x-wp-totalpages": "1" } });
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch });
+  const res = await wp.getCollection<{ id: number }>("/books/", { per_page: 1 });
+  assert.equal(calls[0], "https://example.com/wp-json/wp/v2/books?per_page=1");
+  assert.deepEqual(res, { items: [{ id: 7 }], total: 1, totalPages: 1, page: 1 });
+});
+
+test("getItemBySlug returns the item or null for a custom post type", async () => {
+  const hit = mockFetch([{ id: 9 }]);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch: hit.fetch });
+  assert.deepEqual(await wp.getItemBySlug("books", "dune"), { id: 9 });
+  assert.equal(hit.calls[0], "https://example.com/wp-json/wp/v2/books?slug=dune&per_page=1");
+  const miss = mockFetch([]);
+  const wp2 = new WPClient({ baseUrl: "https://example.com", fetch: miss.fetch });
+  assert.equal(await wp2.getItemBySlug("books", "nope"), null);
+});

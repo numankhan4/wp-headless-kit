@@ -147,12 +147,23 @@ export class WPClient {
     }
   }
 
+  /** List any `show_in_rest` post type by its REST base, e.g. `getCollection<Book>("books")`. */
+  getCollection<T = WPPost>(restBase: string, params?: ListParams): Promise<Paginated<T>> {
+    return this.list<T>(`/wp/v2/${restBase.replace(/^\/+|\/+$/g, "")}`, params);
+  }
+
+  /** Fetch a single item of any `show_in_rest` post type by slug; resolves to `null` when not found. */
+  async getItemBySlug<T = WPPost>(restBase: string, slug: string, params: ListParams = {}): Promise<T | null> {
+    const { items } = await this.getCollection<T>(restBase, { ...params, slug, per_page: 1 });
+    return items[0] ?? null;
+  }
+
   getPosts(params?: ListParams): Promise<Paginated<WPPost>> {
-    return this.list<WPPost>("/wp/v2/posts", params);
+    return this.getCollection<WPPost>("posts", params);
   }
 
   getPages(params?: ListParams): Promise<Paginated<WPPage>> {
-    return this.list<WPPage>("/wp/v2/pages", params);
+    return this.getCollection<WPPage>("pages", params);
   }
 
   getCategories(params?: ListParams): Promise<Paginated<WPTerm>> {
@@ -169,13 +180,11 @@ export class WPClient {
 
   /** Fetch a single post by slug; resolves to `null` when not found. */
   async getPostBySlug(slug: string, params: ListParams = {}): Promise<WPPost | null> {
-    const { items } = await this.getPosts({ ...params, slug, per_page: 1 });
-    return items[0] ?? null;
+    return this.getItemBySlug<WPPost>("posts", slug, params);
   }
 
   /** Fetch a single page by slug; resolves to `null` when not found. */
   async getPageBySlug(slug: string, params: ListParams = {}): Promise<WPPage | null> {
-    const { items } = await this.getPages({ ...params, slug, per_page: 1 });
-    return items[0] ?? null;
+    return this.getItemBySlug<WPPage>("pages", slug, params);
   }
 }
