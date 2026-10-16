@@ -1,4 +1,4 @@
-import type { ListParams, Paginated, WPMedia, WPPage, WPPost, WPTerm } from "./types.js";
+import type { ListParams, Paginated, WPMedia, WPPage, WPPost, WPTerm, WPUser } from "./types.js";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -176,6 +176,11 @@ export class WPClient {
 
   async getMedia(id: number): Promise<WPMedia> {
     return (await this.request<WPMedia>(`/wp/v2/media/${id}`)).data;
+  }
+
+  /** Fetch a single user (author) by id, including `avatar_urls`. */
+  async getUser(id: number): Promise<WPUser> {
+    return (await this.request<WPUser>(`/wp/v2/users/${id}`)).data;
   }
 
   /** Fetch a single post by slug; resolves to `null` when not found. */
