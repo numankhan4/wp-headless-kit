@@ -190,3 +190,12 @@ test("getItemBySlug returns the item or null for a custom post type", async () =
   const wp2 = new WPClient({ baseUrl: "https://example.com", fetch: miss.fetch });
   assert.equal(await wp2.getItemBySlug("books", "nope"), null);
 });
+
+test("getUser fetches the user with avatar_urls", async () => {
+  const user = { id: 3, name: "Ada", avatar_urls: { "96": "https://example.com/a.png" } };
+  const { fetch, calls } = mockFetch(user);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch });
+  const res = await wp.getUser(3);
+  assert.equal(calls[0], "https://example.com/wp-json/wp/v2/users/3");
+  assert.equal(res.avatar_urls?.["96"], "https://example.com/a.png");
+});

@@ -65,6 +65,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | `getPostBySlug / getPageBySlug(slug)`                       | Single item or `null`.                                        |
 | `getCollection<T>(restBase, params)`                        | Paginated list for any custom post type, e.g. `"books"`.      |
 | `getItemBySlug<T>(restBase, slug, params?)`                 | Single custom post type item by slug, or `null`.              |
+| `getUser(id)`                                               | Single user/author as `WPUser`, including `avatar_urls`.      |
 | `getMedia(id)`                                              | Media item.                                                   |
 | `paginate(route, params)`                                   | Async iterator over every item across all pages.              |
 | `request(route, params)`                                    | Call any REST route.                                          |
