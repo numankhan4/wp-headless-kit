@@ -46,6 +46,8 @@ export interface WPPost {
   tags?: number[];
   sticky?: boolean;
   yoast_head_json?: YoastHeadJson;
+  /** Present only when the request used `_embed`; read it with `getFeaturedImage`, `getAuthor` and `getTerms`. */
+  _embedded?: Record<string, unknown>;
 }
 
 export interface WPPage extends Omit<WPPost, "categories" | "tags" | "sticky"> {

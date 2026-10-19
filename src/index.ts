@@ -1,5 +1,7 @@
 export * from "./client/types.js";
 export { WPClient, WPError, parseRetryAfter, toQueryString } from "./client/wp-client.js";
+export { getFeaturedImage, getAuthor, getTerms } from "./client/embedded.js";
+export type { WithEmbedded } from "./client/embedded.js";
 export { basicAuth } from "./client/auth.js";
 export type { FetchLike, WPClientOptions } from "./client/wp-client.js";
 export { yoastToMetadata } from "./seo/yoast.js";
