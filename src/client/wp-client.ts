@@ -1,4 +1,4 @@
-import type { ListParams, Paginated, WPMedia, WPPage, WPPost, WPTerm, WPUser } from "./types.js";
+import type { ListParams, Paginated, WPMedia, WPMenuItem, WPPage, WPPost, WPTerm, WPUser } from "./types.js";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -181,6 +181,19 @@ export class WPClient {
   /** Fetch a single user (author) by id, including `avatar_urls`. */
   async getUser(id: number): Promise<WPUser> {
     return (await this.request<WPUser>(`/wp/v2/users/${id}`)).data;
+  }
+
+  /** Fetch every item of a navigation menu (all pages) from `/wp/v2/menu-items`; usually needs authentication. */
+  async getMenuItems(menuId: number, params: ListParams = {}): Promise<WPMenuItem[]> {
+    const items: WPMenuItem[] = [];
+    for await (const item of this.paginate<WPMenuItem>("/wp/v2/menu-items", {
+      per_page: 100,
+      ...params,
+      menus: menuId,
+    })) {
+      items.push(item);
+    }
+    return items;
   }
 
   /** Fetch a single post by slug; resolves to `null` when not found. */

@@ -8,4 +8,5 @@ export { parseBlocks } from "./blocks/parse.js";
 export type { ParsedBlock } from "./blocks/parse.js";
 export { renderBlocks, passthroughHtml } from "./blocks/render.js";
 export type { BlockRenderer, RenderOptions } from "./blocks/render.js";
+export { buildMenuTree } from "./utils/menu.js";
 export { decodeEntities, escapeHtml, stripTags, toExcerpt, readingTime } from "./utils/html.js";
