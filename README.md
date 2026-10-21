@@ -59,7 +59,7 @@ export default async function Post({ params }: { params: { slug: string } }) {
 
 | Export                                                      | Description                                                   |
 | ----------------------------------------------------------- | ------------------------------------------------------------- |
-| `new WPClient({ baseUrl, fetch?, headers?, requestInit?, retry?, timeoutMs? })` | Create a client. `timeoutMs` aborts each attempt that takes longer and throws `WPError` with code `timeout` (composes with `requestInit.signal`). `retry: { retries, baseDelayMs }` retries 429/5xx with exponential backoff and honours `Retry-After`. |
+| `new WPClient({ baseUrl, fetch?, headers?, requestInit?, retry?, timeoutMs?, cache? })` | Create a client. `cache: { ttlMs, max? }` keeps successful responses in an in-memory LRU map keyed by URL (default `max` 100); hits skip `fetch` and expired entries refetch. `timeoutMs` aborts each attempt that takes longer and throws `WPError` with code `timeout` (composes with `requestInit.signal`). `retry: { retries, baseDelayMs }` retries 429/5xx with exponential backoff and honours `Retry-After`. |
 | `basicAuth(username, appPassword)`                          | `Authorization` header value for Application Passwords (see below). |
 | `getPosts / getPages / getCategories / getTags(params)`     | Paginated lists: `{ items, total, totalPages, page }`.        |
 | `getPostBySlug / getPageBySlug(slug)`                       | Single item or `null`.                                        |
