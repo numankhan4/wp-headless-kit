@@ -91,6 +91,20 @@ const wp = new WPClient({
 const { items: drafts } = await wp.getPosts({ status: "draft" });
 ```
 
+### WPGraphQL
+
+```ts
+import { WPGraphQLClient } from "wp-headless-kit";
+
+const gql = new WPGraphQLClient({ endpoint: "https://example.com/graphql" });
+const data = await gql.query<{ posts: { nodes: { title: string }[] } }>(
+  "query ($n: Int) { posts(first: $n) { nodes { title } } }",
+  { n: 5 },
+);
+```
+
+`query<T>(document, variables)` returns `data`. GraphQL errors and HTTP failures throw `WPError` (code `graphql_error` for GraphQL errors). Options: `endpoint`, `fetch`, `headers`, `requestInit`.
+
 ## Development
 
 ```bash
