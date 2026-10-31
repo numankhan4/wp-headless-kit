@@ -1,5 +1,7 @@
 export * from "./client/types.js";
 export { WPClient, WPError, parseRetryAfter, toQueryString } from "./client/wp-client.js";
+export { getFeaturedImage, getAuthor, getTerms } from "./client/embedded.js";
+export type { WithEmbedded } from "./client/embedded.js";
 export { WPGraphQLClient } from "./client/graphql-client.js";
 export type { WPGraphQLClientOptions } from "./client/graphql-client.js";
 export { basicAuth } from "./client/auth.js";
