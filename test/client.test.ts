@@ -203,3 +203,12 @@ test("search calls /wp/v2/search with term, type, subtype and per_page", async (
   assert.deepEqual(res.items, [hit]);
   assert.equal(res.total, 1);
 });
+
+test("getUser fetches the user with avatar_urls", async () => {
+  const user = { id: 3, name: "Ada", avatar_urls: { "96": "https://example.com/a.png" } };
+  const { fetch, calls } = mockFetch(user);
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch });
+  const res = await wp.getUser(3);
+  assert.equal(calls[0], "https://example.com/wp-json/wp/v2/users/3");
+  assert.equal(res.avatar_urls?.["96"], "https://example.com/a.png");
+});
