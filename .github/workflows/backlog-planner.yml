@@ -44,6 +44,9 @@ jobs:
             Propose exactly 5 next issues that move the roadmap forward. Each must be completable
             in one focused PR (< ~300 changed lines) with clear acceptance criteria and tests.
             Never propose changes to .github/, publishing, or secrets.
+            Favour work that makes the project more useful and credible to other developers:
+            docs and guides, runnable examples, demo-site improvements, accessibility, performance and
+            benchmarks, and real-world integrations (Next.js, Astro, WPGraphQL, SEO plugins).
             Write them to .auto/NEW_ISSUES.json as a JSON array of
             {"title": string, "body": string (Markdown with "## Goal" and "## Acceptance criteria"), "area": one of "client"|"seo"|"blocks"|"nextjs"|"docs"|"tooling"}.
             Write nothing else.
