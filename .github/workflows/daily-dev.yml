@@ -4,7 +4,7 @@ name: Daily dev
 # run the tests, and open a PR authored by the repo owner (via BOT_PAT).
 # Guardrails:
 #   - kill switch: repo variable AUTOMATION_ENABLED must be "true"
-#   - only issues labeled `roadmap` (only maintainers can label)
+#   - only issues labeled `roadmap` (only maintainers can label); `community` issues are left to humans
 #   - at most MAX_OPEN_PRS automated PRs open at once (default 3)
 #   - Claude can only read/edit files and run npm/npx/node; git and GitHub are handled by this workflow
 #   - changes under .github/ are discarded
@@ -77,12 +77,12 @@ jobs:
           else
             issues=$(gh issue list --label roadmap --state open --limit 300 --json number,labels)
             # 1) retry a blocked issue that still has attempts left
-            num=$(jq -r '[.[] | [.labels[].name] as $l | select(($l|index("blocked")) and ($l|index("needs-human")|not) and ($l|index("in-progress")|not))] | sort_by(.number) | .[0].number // empty' <<< "$issues")
+            num=$(jq -r '[.[] | [.labels[].name] as $l | select(($l|index("blocked")) and ($l|index("needs-human")|not) and ($l|index("in-progress")|not) and ($l|index("community")|not))] | sort_by(.number) | .[0].number // empty' <<< "$issues")
             if [ -n "$num" ]; then
               retry=true
             else
               # 2) otherwise the next fresh issue
-              num=$(jq -r '[.[] | [.labels[].name] as $l | select(($l|index("blocked")|not) and ($l|index("in-progress")|not) and ($l|index("needs-human")|not))] | sort_by(.number) | .[0].number // empty' <<< "$issues")
+              num=$(jq -r '[.[] | [.labels[].name] as $l | select(($l|index("blocked")|not) and ($l|index("in-progress")|not) and ($l|index("needs-human")|not) and ($l|index("community")|not))] | sort_by(.number) | .[0].number // empty' <<< "$issues")
             fi
           fi
           if [ -z "$num" ]; then

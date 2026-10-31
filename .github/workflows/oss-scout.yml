@@ -1,0 +1,51 @@
+name: OSS scout
+
+# Weekly (Wednesday): collects fresh "good first issue" tickets from well-known
+# projects in this stack and posts them as one issue assigned to the owner.
+# It only suggests work — contributing to other projects stays a manual, human step.
+# Edit the list with the repo variable OSS_SCOUT_REPOS (space-separated owner/name).
+
+on:
+  schedule:
+    - cron: "23 4 * * 3" # Wednesdays, 09:23 Pakistan time
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  scout:
+    if: vars.AUTOMATION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      REPOS: ${{ vars.OSS_SCOUT_REPOS || 'WordPress/gutenberg WordPress/wordpress-playground vercel/next.js typescript-eslint/typescript-eslint prettier/prettier shadcn-ui/ui lit/lit withastro/astro langchain-ai/langchainjs fastapi/fastapi' }}
+    steps:
+      - shell: bash
+        run: |
+          set -uo pipefail
+          gh label create oss-scout --repo "$REPO" --color 0E8A16 --description "Weekly open-source contribution picks" --force >/dev/null 2>&1 || true
+          today=$(date -u +%Y-%m-%d)
+          {
+            echo "Fresh, unassigned **good first issues** in projects that match this profile's stack."
+            echo "Pick one, read the project's CONTRIBUTING guide, comment to claim it, and open a PR yourself."
+            echo
+            for r in $REPOS; do
+              rows=$(gh api -X GET search/issues \
+                -f q="repo:$r is:issue is:open no:assignee label:\"good first issue\" created:>$(date -u -d '120 days ago' +%Y-%m-%d)" \
+                -f sort=created -f order=desc -f per_page=3 \
+                --jq '.items[] | "- [ ] [\(.title)](\(.html_url)) · \(.comments) comments · opened \(.created_at[:10])"' 2>/dev/null || true)
+              [ -z "$rows" ] && continue
+              echo "### $r"; echo "$rows"; echo
+              sleep 3
+            done
+            echo "_Change the project list with the repo variable \`OSS_SCOUT_REPOS\`._"
+          } > picks.md
+          for n in $(gh issue list --repo "$REPO" --label oss-scout --state open --json number --jq '.[].number'); do
+            gh issue close "$n" --repo "$REPO" --comment "Superseded by this week's picks." >/dev/null
+          done
+          gh issue create --repo "$REPO" --title "OSS picks — $today" --body-file picks.md \
+            --label oss-scout --assignee "${{ github.repository_owner }}"

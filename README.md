@@ -3,6 +3,7 @@
 [![CI](https://github.com/numankhan4/wp-headless-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/numankhan4/wp-headless-kit/actions/workflows/ci.yml)
 ![license](https://img.shields.io/badge/license-MIT-38bdf8)
 ![deps](https://img.shields.io/badge/runtime%20deps-0-0ea5e9)
+[![release](https://img.shields.io/github/v/release/numankhan4/wp-headless-kit?color=38bdf8)](https://github.com/numankhan4/wp-headless-kit/releases)
 
 **[▶ Live playground](https://numankhan4.github.io/wp-headless-kit/)**: fetch posts from any WordPress site, see the generated SEO metadata, and parse Gutenberg blocks in your browser.
 
@@ -57,24 +58,24 @@ export default async function Post({ params }: { params: { slug: string } }) {
 
 ## API
 
-| Export                                                      | Description                                                   |
-| ----------------------------------------------------------- | ------------------------------------------------------------- |
+| Export                                                                                  | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `new WPClient({ baseUrl, fetch?, headers?, requestInit?, retry?, timeoutMs?, cache? })` | Create a client. `cache: { ttlMs, max? }` keeps successful responses in an in-memory LRU map keyed by URL (default `max` 100); hits skip `fetch` and expired entries refetch. `timeoutMs` aborts each attempt that takes longer and throws `WPError` with code `timeout` (composes with `requestInit.signal`). `retry: { retries, baseDelayMs }` retries 429/5xx with exponential backoff and honours `Retry-After`. |
-| `basicAuth(username, appPassword)`                          | `Authorization` header value for Application Passwords (see below). |
-| `getPosts / getPages / getCategories / getTags(params)`     | Paginated lists: `{ items, total, totalPages, page }`.        |
-| `getPostBySlug / getPageBySlug(slug)`                       | Single item or `null`.                                        |
-| `getCollection<T>(restBase, params)`                        | Paginated list for any custom post type, e.g. `"books"`.      |
-| `getItemBySlug<T>(restBase, slug, params?)`                 | Single custom post type item by slug, or `null`.              |
-| `getUser(id)`                                               | Single user/author as `WPUser`, including `avatar_urls`.      |
-| `getMenuItems(menuId, params?)`                             | All items of a nav menu (`/wp/v2/menu-items`), flat `WPMenuItem[]`. |
-| `buildMenuTree(items)`                                      | Pure helper nesting menu items by `parent` into `children`, sorted by `menu_order`. |
-| `getMedia(id)`                                              | Media item.                                                   |
-| `paginate(route, params)`                                   | Async iterator over every item across all pages.              |
-| `request(route, params)`                                    | Call any REST route.                                          |
-| `WPError`                                                   | Thrown on non-2xx responses, with `status`, `code` and `url`. |
-| `yoastToMetadata(yoast, { rewriteOrigin? })`                | Yoast to framework-neutral metadata.                          |
-| `parseBlocks(html)`                                         | Gutenberg block tree.                                         |
-| `renderBlocks(blocks, { renderers, fallback })`             | Render the tree to strings, React nodes, etc.                 |
+| `basicAuth(username, appPassword)`                                                      | `Authorization` header value for Application Passwords (see below).                                                                                                                                                                                                                                                                                                                                                  |
+| `getPosts / getPages / getCategories / getTags(params)`                                 | Paginated lists: `{ items, total, totalPages, page }`.                                                                                                                                                                                                                                                                                                                                                               |
+| `getPostBySlug / getPageBySlug(slug)`                                                   | Single item or `null`.                                                                                                                                                                                                                                                                                                                                                                                               |
+| `getCollection<T>(restBase, params)`                                                    | Paginated list for any custom post type, e.g. `"books"`.                                                                                                                                                                                                                                                                                                                                                             |
+| `getItemBySlug<T>(restBase, slug, params?)`                                             | Single custom post type item by slug, or `null`.                                                                                                                                                                                                                                                                                                                                                                     |
+| `getUser(id)`                                                                           | Single user/author as `WPUser`, including `avatar_urls`.                                                                                                                                                                                                                                                                                                                                                             |
+| `getMenuItems(menuId, params?)`                                                         | All items of a nav menu (`/wp/v2/menu-items`), flat `WPMenuItem[]`.                                                                                                                                                                                                                                                                                                                                                  |
+| `buildMenuTree(items)`                                                                  | Pure helper nesting menu items by `parent` into `children`, sorted by `menu_order`.                                                                                                                                                                                                                                                                                                                                  |
+| `getMedia(id)`                                                                          | Media item.                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `paginate(route, params)`                                                               | Async iterator over every item across all pages.                                                                                                                                                                                                                                                                                                                                                                     |
+| `request(route, params)`                                                                | Call any REST route.                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `WPError`                                                                               | Thrown on non-2xx responses, with `status`, `code` and `url`.                                                                                                                                                                                                                                                                                                                                                        |
+| `yoastToMetadata(yoast, { rewriteOrigin? })`                                            | Yoast to framework-neutral metadata.                                                                                                                                                                                                                                                                                                                                                                                 |
+| `parseBlocks(html)`                                                                     | Gutenberg block tree.                                                                                                                                                                                                                                                                                                                                                                                                |
+| `renderBlocks(blocks, { renderers, fallback })`                                         | Render the tree to strings, React nodes, etc.                                                                                                                                                                                                                                                                                                                                                                        |
 
 ### Fetching drafts with Application Passwords
 
@@ -122,9 +123,15 @@ This project doubles as a demo of an AI-assisted engineering workflow I designed
 - **Daily:** a GitHub Action picks the next roadmap issue, Claude implements it with tests, and opens a PR.
 - **Every PR:** an AI review posts inline feedback; CI must pass before anything merges.
 - **Risk-based merging:** docs/tests-only changes auto-merge; code, dependency and workflow changes are reviewed and merged by me.
+- **Self-maintaining:** conflicted PRs are brought up to date with `main` automatically; blocked issues are retried with the previous blocker as context.
+- **Releases:** a weekly workflow publishes a versioned GitHub Release from Conventional Commits.
 - **Guardrails:** a cap on open PRs, protected workflow files, and a kill switch.
 
 The workflows are in [`.github/workflows`](.github/workflows) if you want to reuse the setup.
+
+## Contributing
+
+Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
