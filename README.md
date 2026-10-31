@@ -3,6 +3,7 @@
 [![CI](https://github.com/numankhan4/wp-headless-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/numankhan4/wp-headless-kit/actions/workflows/ci.yml)
 ![license](https://img.shields.io/badge/license-MIT-38bdf8)
 ![deps](https://img.shields.io/badge/runtime%20deps-0-0ea5e9)
+[![release](https://img.shields.io/github/v/release/numankhan4/wp-headless-kit?color=38bdf8)](https://github.com/numankhan4/wp-headless-kit/releases)
 
 **[▶ Live playground](https://numankhan4.github.io/wp-headless-kit/)**: fetch posts from any WordPress site, see the generated SEO metadata, and parse Gutenberg blocks in your browser.
 
@@ -123,9 +124,15 @@ This project doubles as a demo of an AI-assisted engineering workflow I designed
 - **Daily:** a GitHub Action picks the next roadmap issue, Claude implements it with tests, and opens a PR.
 - **Every PR:** an AI review posts inline feedback; CI must pass before anything merges.
 - **Risk-based merging:** docs/tests-only changes auto-merge; code, dependency and workflow changes are reviewed and merged by me.
+- **Self-maintaining:** conflicted PRs are brought up to date with `main` automatically; blocked issues are retried with the previous blocker as context.
+- **Releases:** a weekly workflow publishes a versioned GitHub Release from Conventional Commits.
 - **Guardrails:** a cap on open PRs, protected workflow files, and a kill switch.
 
 The workflows are in [`.github/workflows`](.github/workflows) if you want to reuse the setup.
+
+## Contributing
+
+Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
