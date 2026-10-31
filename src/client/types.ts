@@ -90,6 +90,25 @@ export interface WPUser {
   avatar_urls?: Record<string, string>;
 }
 
+/** A navigation menu item as returned by `/wp/v2/menu-items`. */
+export interface WPMenuItem {
+  id: number;
+  title: Rendered;
+  url: string;
+  /** Id of the parent menu item, or `0` for top-level items. */
+  parent: number;
+  menu_order: number;
+  target?: string;
+  classes?: string[];
+  description?: string;
+  object?: string;
+  object_id?: number;
+  type?: string;
+}
+
+/** A menu item with its nested children, built by `buildMenuTree`. */
+export type WPMenuTreeNode<T extends WPMenuItem = WPMenuItem> = T & { children: Array<WPMenuTreeNode<T>> };
+
 /** Query parameters accepted by collection endpoints (posts, pages, terms). */
 export interface ListParams {
   page?: number;

@@ -1,4 +1,4 @@
-import type { ListParams, Paginated, WPMedia, WPPage, WPPost, WPTerm, WPUser } from "./types.js";
+import type { ListParams, Paginated, WPMedia, WPMenuItem, WPPage, WPPost, WPTerm, WPUser } from "./types.js";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -15,6 +15,8 @@ export interface WPClientOptions {
   retry?: { retries: number; baseDelayMs: number };
   /** Abort each attempt after this many ms and throw a `WPError` with code `timeout`. Composes with `requestInit.signal`. */
   timeoutMs?: number;
+  /** Cache successful GET responses in memory by URL for `ttlMs`, evicting least-recently-used entries beyond `max` (default 100). */
+  cache?: { ttlMs: number; max?: number };
 }
 
 export class WPError extends Error {
@@ -59,6 +61,7 @@ export function toQueryString(params: ListParams = {}): string {
 export class WPClient {
   private readonly root: string;
   private readonly fetchImpl: FetchLike;
+  private readonly cache = new Map<string, { expires: number; value: { data: unknown; headers: Headers } }>();
 
   constructor(private readonly options: WPClientOptions) {
     if (!options.baseUrl) throw new Error("WPClient: baseUrl is required");
@@ -100,6 +103,17 @@ export class WPClient {
   /** Low-level GET against any REST route, e.g. `request("/wp/v2/posts")`. */
   async request<T>(route: string, params?: ListParams): Promise<{ data: T; headers: Headers }> {
     const url = `${this.root}${route.startsWith("/") ? route : `/${route}`}${toQueryString(params)}`;
+    const cacheOpts = this.options.cache;
+    const useCache = !!cacheOpts && cacheOpts.ttlMs > 0;
+    if (useCache) {
+      const hit = this.cache.get(url);
+      if (hit && hit.expires > Date.now()) {
+        this.cache.delete(url);
+        this.cache.set(url, hit); // refresh recency
+        return hit.value as { data: T; headers: Headers };
+      }
+      this.cache.delete(url);
+    }
     const retries = Math.max(0, this.options.retry?.retries ?? 0);
     const baseDelayMs = this.options.retry?.baseDelayMs ?? 0;
     let res: Response;
@@ -122,7 +136,13 @@ export class WPClient {
       }
       throw new WPError(message, res.status, code, url);
     }
-    return { data: (await res.json()) as T, headers: res.headers };
+    const value = { data: (await res.json()) as T, headers: res.headers };
+    if (useCache) {
+      this.cache.set(url, { expires: Date.now() + cacheOpts.ttlMs, value });
+      const max = Math.max(1, cacheOpts.max ?? 100);
+      while (this.cache.size > max) this.cache.delete(this.cache.keys().next().value as string);
+    }
+    return value;
   }
 
   private async list<T>(route: string, params: ListParams = {}): Promise<Paginated<T>> {
@@ -181,6 +201,19 @@ export class WPClient {
   /** Fetch a single user (author) by id, including `avatar_urls`. */
   async getUser(id: number): Promise<WPUser> {
     return (await this.request<WPUser>(`/wp/v2/users/${id}`)).data;
+  }
+
+  /** Fetch every item of a navigation menu (all pages) from `/wp/v2/menu-items`; usually needs authentication. */
+  async getMenuItems(menuId: number, params: ListParams = {}): Promise<WPMenuItem[]> {
+    const items: WPMenuItem[] = [];
+    for await (const item of this.paginate<WPMenuItem>("/wp/v2/menu-items", {
+      per_page: 100,
+      ...params,
+      menus: menuId,
+    })) {
+      items.push(item);
+    }
+    return items;
   }
 
   /** Fetch a single post by slug; resolves to `null` when not found. */
