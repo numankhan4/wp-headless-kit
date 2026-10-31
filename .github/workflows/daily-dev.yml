@@ -137,6 +137,9 @@ jobs:
 
       - name: Implement with Claude
         if: steps.pick.outputs.skip == 'false'
+        # The action fails when Claude finishes past --max-turns even if the work is done;
+        # the next step judges the actual result (changes + tests), so don't stop here.
+        continue-on-error: true
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -154,6 +157,7 @@ jobs:
             - You may install dev dependencies (npm install -D ...) and run tools with npx.
               If a package's peer dependencies don't match (for example the installed TypeScript
               version), pick a compatible version or configuration instead of giving up.
+            - Work efficiently: prefer tools' auto-fix modes and batch edits over many small steps.
             - Do NOT edit anything under .github/ and do NOT run git commands.
             - When done, write .auto/PR.md with this exact format:
                 line 1: a Conventional Commit subject, max 72 chars (e.g. "feat(client): add retry with backoff")
@@ -163,7 +167,7 @@ jobs:
               explaining why and exactly what decision is needed, and make no other changes.
           claude_args: |
             --model sonnet
-            --max-turns 40
+            --max-turns 60
             --allowedTools "Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash(npm:*),Bash(npx:*),Bash(node:*)"
 
       - name: Verify, commit and open PR
