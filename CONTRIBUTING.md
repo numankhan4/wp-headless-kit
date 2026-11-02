@@ -17,7 +17,7 @@ Requires Node.js 22+.
 
 - Keep the change focused on one thing; small PRs get reviewed fastest.
 - Add or update tests in `test/` for any behaviour change (`node:test`, mocked `fetch`, no network).
-- Run `npm run typecheck`, `npm test` and `npm run format:check`.
+- Run `npm run typecheck`, `npm test`, `npm run lint` and `npm run format:check`.
 - The core package has **zero runtime dependencies** — please keep it that way.
 - Use [Conventional Commits](https://www.conventionalcommits.org/) for the PR title (`feat:`, `fix:`, `docs:` …); releases are generated from them.
 

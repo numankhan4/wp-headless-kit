@@ -13,10 +13,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body id="top">
   <header class="top">
     <div class="wrap top-inner">
-      <a class="brand" href="#"><span class="logo">wp</span> wp-headless-kit</a>
+      <a class="brand" href="#top"><span class="logo">wp</span> wp-headless-kit</a>
       <nav>
         <a href="#playground">Playground</a>
         <a href="#blocks">Blocks</a>
@@ -31,7 +31,7 @@
       <p class="eyebrow">TypeScript · 0 runtime dependencies · MIT</p>
       <h1>Headless WordPress,<br /><span>typed end to end.</span></h1>
       <p class="lede">A small toolkit for Next.js, Astro or plain Node front ends on WordPress: a typed REST client, Yoast SEO → framework metadata, and a Gutenberg block parser with pluggable renderers.</p>
-      <div class="install"><code>npm install github:numankhan4/wp-headless-kit</code><button class="copy" data-copy="npm install github:numankhan4/wp-headless-kit" aria-label="Copy install command">Copy</button></div>
+      <div class="install"><code>npm install github:numankhan4/wp-headless-kit</code><button type="button" class="copy" data-copy="npm install github:numankhan4/wp-headless-kit" aria-label="Copy install command">Copy</button></div>
       <div class="stats" id="stats">
         <div><strong id="stat-tests">15+</strong><span>tests</span></div>
         <div><strong id="stat-prs">—</strong><span>PRs merged</span></div>
@@ -64,16 +64,16 @@
           <div class="panel-head"><span>Posts</span><span class="muted" id="pagination"></span></div>
           <ol id="post-list" class="post-list"><li class="empty">Choose a site to load its posts.</li></ol>
           <div class="pager">
-            <button id="prev" disabled>← Prev</button>
-            <button id="next" disabled>Next →</button>
+            <button type="button" id="prev" disabled>← Prev</button>
+            <button type="button" id="next" disabled>Next →</button>
           </div>
         </div>
 
         <div class="panel detail-panel">
           <div class="tabs" role="tablist">
-            <button role="tab" class="tab active" data-tab="preview">Preview</button>
-            <button role="tab" class="tab" data-tab="seo">SEO metadata</button>
-            <button role="tab" class="tab" data-tab="json">Raw JSON</button>
+            <button type="button" role="tab" class="tab active" data-tab="preview">Preview</button>
+            <button type="button" role="tab" class="tab" data-tab="seo">SEO metadata</button>
+            <button type="button" role="tab" class="tab" data-tab="json">Raw JSON</button>
           </div>
           <div class="tab-body" id="tab-preview">
             <p class="empty">Pick a post to preview it.</p>

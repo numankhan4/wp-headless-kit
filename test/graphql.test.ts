@@ -24,7 +24,7 @@ test("query posts document and variables and returns data", async () => {
     query: "query($n:Int){posts(first:$n)}",
     variables: { n: 1 },
   });
-  assert.equal((init?.headers as Record<string, string>)["X-A"], "b");
+  assert.equal((init?.headers as Record<string, string> | undefined)?.["X-A"], "b");
 });
 
 test("GraphQL errors surface as WPError", async () => {

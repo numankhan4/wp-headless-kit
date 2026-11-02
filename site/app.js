@@ -18,7 +18,7 @@ const PER_PAGE = 8;
 const $ = (sel) => document.querySelector(sel);
 
 /* ---------------- Copy button ---------------- */
-document.querySelectorAll("[data-copy]").forEach((btn) =>
+document.querySelectorAll("[data-copy]").forEach((btn) => {
   btn.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(btn.dataset.copy);
@@ -27,8 +27,8 @@ document.querySelectorAll("[data-copy]").forEach((btn) =>
     } catch {
       /* clipboard unavailable */
     }
-  }),
-);
+  });
+});
 
 /* ---------------- Playground ---------------- */
 const state = { client: null, page: 1, totalPages: 1, posts: [], selected: null, search: "" };
@@ -90,14 +90,18 @@ function renderList() {
       </button></li>`;
     })
     .join("");
-  list.querySelectorAll("li.item").forEach((li) => li.addEventListener("click", () => selectPost(Number(li.dataset.id))));
+  list.querySelectorAll("li.item").forEach((li) => {
+  li.addEventListener("click", () => selectPost(Number(li.dataset.id)));
+});
 }
 
 function selectPost(id) {
   const post = state.posts.find((p) => p.id === id);
   if (!post) return;
   state.selected = post;
-  document.querySelectorAll("#post-list li.item").forEach((li) => li.classList.toggle("sel", Number(li.dataset.id) === id));
+  document.querySelectorAll("#post-list li.item").forEach((li) => {
+  li.classList.toggle("sel", Number(li.dataset.id) === id);
+});
 
   const title = escapeHtml(decodeEntities(post.title.rendered));
   const image = post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
@@ -121,17 +125,23 @@ function selectPost(id) {
   $("#tab-json").innerHTML = `<pre class="json">${escapeHtml(JSON.stringify(trimmed, null, 2))}</pre>`;
 }
 
-document.querySelectorAll(".tab").forEach((tab) =>
+document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));
-    document.querySelectorAll(".tab-body").forEach((b) => b.classList.toggle("hidden", b.id !== `tab-${tab.dataset.tab}`));
-  }),
-);
+    document.querySelectorAll(".tab").forEach((t) => {
+  t.classList.toggle("active", t === tab);
+});
+    document.querySelectorAll(".tab-body").forEach((b) => {
+  b.classList.toggle("hidden", b.id !== `tab-${tab.dataset.tab}`);
+});
+  });
+});
 
 function connect() {
   const url = $("#site-url").value.trim();
   if (!url) return;
-  document.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c.dataset.url === url));
+  document.querySelectorAll(".chip").forEach((c) => {
+  c.classList.toggle("active", c.dataset.url === url);
+});
   try {
     state.client = new WPClient({ baseUrl: url });
   } catch (err) {
@@ -147,12 +157,12 @@ $("#fetch-form").addEventListener("submit", (e) => {
   e.preventDefault();
   connect();
 });
-document.querySelectorAll(".chip").forEach((chip) =>
+document.querySelectorAll(".chip").forEach((chip) => {
   chip.addEventListener("click", () => {
     $("#site-url").value = chip.dataset.url;
     connect();
-  }),
-);
+  });
+});
 $("#prev").addEventListener("click", () => {
   if (state.page > 1) { state.page--; loadPosts(); }
 });
