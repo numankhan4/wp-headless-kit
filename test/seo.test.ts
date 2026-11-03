@@ -1,6 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { yoastToMetadata } from "../src/index.js";
+import { yoastToMetadata, yoastJsonLd } from "../src/index.js";
+
+test("yoastJsonLd escapes script-closing sequences", () => {
+  const evil = "</script><script>alert(1)</script> & <!--";
+  const out = yoastJsonLd({ schema: { "@context": "https://schema.org", "@graph": [{ name: evil }] } });
+  assert.ok(!out.includes("<"));
+  assert.ok(!out.includes(">"));
+  assert.equal(JSON.parse(out)["@graph"][0].name, evil);
+});
+
+test("yoastJsonLd returns empty string without a schema", () => {
+  assert.equal(yoastJsonLd(undefined), "");
+  assert.equal(yoastJsonLd({ title: "x" }), "");
+});
 
 test("yoastToMetadata maps Yoast fields and rewrites the origin", () => {
   const meta = yoastToMetadata(

@@ -4,7 +4,7 @@ export { WPGraphQLClient } from "./client/graphql-client.js";
 export type { WPGraphQLClientOptions } from "./client/graphql-client.js";
 export { basicAuth } from "./client/auth.js";
 export type { FetchLike, WPClientOptions } from "./client/wp-client.js";
-export { yoastToMetadata } from "./seo/yoast.js";
+export { yoastToMetadata, yoastJsonLd } from "./seo/yoast.js";
 export type { PageMetadata, MetadataOptions } from "./seo/yoast.js";
 export { parseBlocks } from "./blocks/parse.js";
 export type { ParsedBlock } from "./blocks/parse.js";
