@@ -83,3 +83,10 @@ export function yoastToMetadata(yoast: YoastHeadJson | undefined, opts: Metadata
   };
   return clean(meta) ?? {};
 }
+
+/** Serialize Yoast's schema graph to a string that is safe inside a `<script type="application/ld+json">` tag. */
+export function yoastJsonLd(yoast: YoastHeadJson | undefined): string {
+  const json = yoast?.schema === undefined ? undefined : JSON.stringify(yoast.schema);
+  if (!json) return "";
+  return json.replace(/[<>&]/g, (c) => "\\u00" + c.charCodeAt(0).toString(16).padStart(2, "0"));
+}
