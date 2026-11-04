@@ -123,6 +123,23 @@ export interface ListParams {
   [key: string]: string | number | boolean | string[] | number[] | undefined;
 }
 
+/** A single hit from `/wp/v2/search`. */
+export interface WPSearchResult {
+  id: number;
+  title: string;
+  url: string;
+  type: "post" | "term" | "post-format" | (string & {});
+  subtype: string;
+}
+
+/** Options for `WPClient.search`. */
+export interface SearchOptions {
+  type?: "post" | "term" | "post-format" | (string & {});
+  subtype?: string | string[];
+  per_page?: number;
+  page?: number;
+}
+
 /** A page of results plus WordPress's pagination headers. */
 export interface Paginated<T> {
   items: T[];

@@ -1,4 +1,15 @@
-import type { ListParams, Paginated, WPMedia, WPMenuItem, WPPage, WPPost, WPTerm, WPUser } from "./types.js";
+import type {
+  ListParams,
+  Paginated,
+  SearchOptions,
+  WPMedia,
+  WPMenuItem,
+  WPPage,
+  WPPost,
+  WPSearchResult,
+  WPTerm,
+  WPUser,
+} from "./types.js";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -192,6 +203,11 @@ export class WPClient {
 
   getTags(params?: ListParams): Promise<Paginated<WPTerm>> {
     return this.list<WPTerm>("/wp/v2/tags", params);
+  }
+
+  /** Search across content types via `/wp/v2/search`, optionally filtered by `type`/`subtype`. */
+  search(term: string, options: SearchOptions = {}): Promise<Paginated<WPSearchResult>> {
+    return this.list<WPSearchResult>("/wp/v2/search", { ...options, search: term });
   }
 
   async getMedia(id: number): Promise<WPMedia> {

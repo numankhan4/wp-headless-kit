@@ -191,6 +191,19 @@ test("getItemBySlug returns the item or null for a custom post type", async () =
   assert.equal(await wp2.getItemBySlug("books", "nope"), null);
 });
 
+test("search calls /wp/v2/search with term, type, subtype and per_page", async () => {
+  const hit = { id: 1, title: "Hello", url: "https://example.com/hello", type: "post", subtype: "page" };
+  const { fetch, calls } = mockFetch([hit], { headers: { "x-wp-total": "1", "x-wp-totalpages": "1" } });
+  const wp = new WPClient({ baseUrl: "https://example.com", fetch });
+  const res = await wp.search("hello world", { type: "post", subtype: "page", per_page: 5 });
+  assert.equal(
+    calls[0],
+    "https://example.com/wp-json/wp/v2/search?type=post&subtype=page&per_page=5&search=hello+world",
+  );
+  assert.deepEqual(res.items, [hit]);
+  assert.equal(res.total, 1);
+});
+
 test("getUser fetches the user with avatar_urls", async () => {
   const user = { id: 3, name: "Ada", avatar_urls: { "96": "https://example.com/a.png" } };
   const { fetch, calls } = mockFetch(user);
