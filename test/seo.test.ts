@@ -1,6 +1,34 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { yoastToMetadata, yoastJsonLd } from "../src/index.js";
+import { yoastToMetadata, yoastJsonLd, yoastBreadcrumbs } from "../src/index.js";
+
+test("yoastBreadcrumbs extracts the BreadcrumbList and rewrites origin", () => {
+  const yoast = {
+    schema: {
+      "@graph": [
+        { "@type": "WebPage", name: "x" },
+        {
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 2, name: "Hello &amp; bye" },
+            { "@type": "ListItem", position: 3, name: "Post &amp; more", item: "https://cms.example.com/blog/post/" },
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://cms.example.com/" },
+          ],
+        },
+      ],
+    },
+  };
+  assert.deepEqual(yoastBreadcrumbs(yoast), [
+    { name: "Home", url: "https://cms.example.com/" },
+    { name: "Post & more", url: "https://cms.example.com/blog/post/" },
+  ]);
+  const rewritten = yoastBreadcrumbs(yoast, {
+    rewriteOrigin: { from: "https://cms.example.com", to: "https://www.example.com" },
+  });
+  assert.equal(rewritten[1]?.url, "https://www.example.com/blog/post/");
+  assert.deepEqual(yoastBreadcrumbs(undefined), []);
+  assert.deepEqual(yoastBreadcrumbs({ title: "x" }), []);
+});
 
 test("yoastJsonLd escapes script-closing sequences", () => {
   const evil = "</script><script>alert(1)</script> & <!--";

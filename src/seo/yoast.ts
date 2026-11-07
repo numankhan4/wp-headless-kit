@@ -84,6 +84,37 @@ export function yoastToMetadata(yoast: YoastHeadJson | undefined, opts: Metadata
   return clean(meta) ?? {};
 }
 
+/** Extract breadcrumb `{ name, url }` items from the BreadcrumbList node of Yoast's schema graph. */
+export function yoastBreadcrumbs(
+  yoast: YoastHeadJson | undefined,
+  opts: MetadataOptions = {},
+): Array<{ name: string; url: string }> {
+  const schema = yoast?.schema;
+  const graph = (schema as { "@graph"?: unknown } | undefined)?.["@graph"];
+  const nodes: unknown[] = Array.isArray(graph) ? graph : Array.isArray(schema) ? schema : [schema];
+  const list = nodes.find((n) => {
+    if (!n || typeof n !== "object") return false;
+    const t = (n as { "@type"?: unknown })["@type"];
+    return t === "BreadcrumbList" || (Array.isArray(t) && t.includes("BreadcrumbList"));
+  }) as { itemListElement?: unknown } | undefined;
+  const raw = list?.itemListElement;
+  if (!Array.isArray(raw)) return [];
+
+  const items: Array<{ pos: number; idx: number; name: string; url: string }> = [];
+  raw.forEach((i, idx) => {
+    if (!i || typeof i !== "object") return;
+    const rec = i as Record<string, unknown>;
+    const item = rec.item;
+    const obj = item && typeof item === "object" ? (item as Record<string, unknown>) : undefined;
+    const url = typeof item === "string" ? item : obj?.["@id"];
+    const name = rec.name ?? obj?.name;
+    if (typeof url !== "string" || typeof name !== "string" || !name) return;
+    items.push({ pos: typeof rec.position === "number" ? rec.position : idx, idx, name: decodeEntities(name), url });
+  });
+  items.sort((a, b) => a.pos - b.pos || a.idx - b.idx);
+  return items.map((i) => ({ name: i.name, url: rewrite(i.url, opts) ?? i.url }));
+}
+
 /** Serialize Yoast's schema graph to a string that is safe inside a `<script type="application/ld+json">` tag. */
 export function yoastJsonLd(yoast: YoastHeadJson | undefined): string {
   const json = yoast?.schema === undefined ? undefined : JSON.stringify(yoast.schema);
