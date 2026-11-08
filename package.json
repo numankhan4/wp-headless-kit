@@ -1,6 +1,6 @@
 {
   "name": "wp-headless-kit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Typed, zero-dependency toolkit for building headless WordPress front ends: REST client, SEO metadata, and Gutenberg block rendering.",
   "type": "module",
   "main": "./dist/src/index.js",
