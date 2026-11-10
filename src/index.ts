@@ -8,6 +8,7 @@ export { basicAuth } from "./client/auth.js";
 export type { FetchLike, WPClientOptions } from "./client/wp-client.js";
 export { yoastToMetadata, yoastJsonLd } from "./seo/yoast.js";
 export type { PageMetadata, MetadataOptions } from "./seo/yoast.js";
+export { rankMathToMetadata } from "./seo/rankmath.js";
 export { buildSitemap } from "./seo/sitemap.js";
 export type { SitemapEntry } from "./seo/sitemap.js";
 export { parseBlocks } from "./blocks/parse.js";
