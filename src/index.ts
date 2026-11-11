@@ -11,6 +11,8 @@ export type { PageMetadata, MetadataOptions } from "./seo/yoast.js";
 export { rankMathToMetadata } from "./seo/rankmath.js";
 export { buildSitemap } from "./seo/sitemap.js";
 export type { SitemapEntry } from "./seo/sitemap.js";
+export { buildRobotsTxt } from "./seo/robots.js";
+export type { RobotsRule, RobotsTxtOptions } from "./seo/robots.js";
 export { buildRssFeed } from "./seo/rss.js";
 export type { RssItem, RssFeedOptions } from "./seo/rss.js";
 export { parseBlocks } from "./blocks/parse.js";
