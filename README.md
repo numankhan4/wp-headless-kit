@@ -84,6 +84,8 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | `parseBlocks(html)`                                                                     | Gutenberg block tree.                                                                                                                                                                                                                                                                                                                                                                                                |
 | `renderBlocks(blocks, { renderers, fallback })`                                         | Render the tree to strings, React nodes, etc.                                                                                                                                                                                                                                                                                                                                                                        |
 
+`renderImage` is a ready-made `core/image` string renderer (register it under `"core/image"`): it outputs an `<img>` with escaped `src`/`alt`, `width`, `height` and `loading="lazy"`, and drops unsafe URL schemes.
+
 ### Fetching drafts with Application Passwords
 
 Create an Application Password in your WordPress profile, then pass `basicAuth` as a header. It uses `TextEncoder` and `btoa`, so it works in Node and edge runtimes. Keep credentials server-side.

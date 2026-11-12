@@ -1,6 +1,34 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseBlocks, passthroughHtml, renderBlocks } from "../src/index.js";
+import { parseBlocks, passthroughHtml, renderBlocks, renderImage } from "../src/index.js";
+import type { ParsedBlock } from "../src/index.js";
+
+test("renderImage outputs lazy img with dimensions and escaped alt", () => {
+  const html = `<!-- wp:image {"width":640,"height":480} -->
+<figure class="wp-block-image"><img src="/a.jpg?x=1&amp;y=2" alt="A &quot;<b>&quot; &amp; c"/></figure>
+<!-- /wp:image -->`;
+  const [out] = renderBlocks(parseBlocks(html), { renderers: { "core/image": renderImage }, fallback: passthroughHtml });
+  assert.equal(
+    out,
+    '<img src="/a.jpg?x=1&amp;y=2" alt="A &quot;&lt;b&gt;&quot; &amp; c" width="640" height="480" loading="lazy">',
+  );
+});
+
+test("renderImage drops javascript: URLs and escapes attribute breakouts", () => {
+  const bad: ParsedBlock = {
+    blockName: "core/image",
+    attrs: { url: "javascript:alert(1)" },
+    innerBlocks: [],
+    innerHTML: "",
+    innerContent: [],
+  };
+  assert.equal(renderImage(bad, [], "k"), "");
+  const q = { ...bad, attrs: { url: "https://x/a.png", alt: '" onerror="x', width: "10px" } };
+  assert.equal(
+    renderImage(q, [], "k"),
+    '<img src="https://x/a.png" alt="&quot; onerror=&quot;x" width="10" loading="lazy">',
+  );
+});
 
 const doc = `<!-- wp:heading {"level":2} -->
 <h2>Title</h2>
