@@ -79,11 +79,14 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | `rankMathToMetadata(html, { rewriteOrigin? })` | Parses the head HTML from Rank Math's `/rankmath/v1/getHead` into the same metadata shape. |
 | `yoastJsonLd(yoast)` | Yoast schema graph to an XSS-safe string for a `<script type="application/ld+json">` tag (escapes `<`, `>`, `&`). |
 | `yoastBreadcrumbs(yoast, { rewriteOrigin? })` | Breadcrumb `{ name, url }[]` from the Yoast BreadcrumbList schema node. |
+| `buildRobotsTxt({ rules, sitemaps })` | robots.txt string from `{ userAgent, allow?, disallow?, crawlDelay? }[]` rule groups plus `Sitemap:` URLs; newlines in values are stripped. |
 | `buildSitemap(entries)` | XML sitemap string from `{ loc, lastmod?, changefreq?, priority? }[]`; all values are XML-escaped. |
 | `buildRssFeed({ title, link, description, items })` | RSS 2.0 feed string from `{ title, link, date?, excerpt? }[]`; text is XML-escaped and excerpts are CDATA-safe. |
 | `parseBlocks(html)`                                                                     | Gutenberg block tree.                                                                                                                                                                                                                                                                                                                                                                                                |
 | `renderEmbed` / `parseVideoUrl(url)` | `core/embed` renderer: YouTube/Vimeo become a thumbnail link (no iframe); other providers keep saved HTML. Use `renderers: { "core/embed": renderEmbed }`. |
 | `renderBlocks(blocks, { renderers, fallback })`                                         | Render the tree to strings, React nodes, etc.                                                                                                                                                                                                                                                                                                                                                                        |
+
+`renderImage` is a ready-made `core/image` string renderer (register it under `"core/image"`): it outputs an `<img>` with escaped `src`/`alt`, `width`, `height` and `loading="lazy"`, and drops unsafe URL schemes.
 
 ### Fetching drafts with Application Passwords
 
