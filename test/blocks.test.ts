@@ -86,3 +86,27 @@ test("renderBlocks applies custom renderers and falls back to passthrough", () =
   assert.match(html, /<p>Left<\/p>/);
   assert.match(html, /<a href="\/contact">CTA<\/a>/);
 });
+
+test("extractToc returns headings and adds unique slug ids", async () => {
+  const { extractToc } = await import("../src/index.js");
+  const blocks = parseBlocks(`<!-- wp:heading -->
+<h2>Hello &amp; World</h2>
+<!-- /wp:heading -->
+<!-- wp:heading {"level":3} -->
+<h3>Hello &amp; World</h3>
+<!-- /wp:heading -->
+<!-- wp:heading {"anchor":"intro"} -->
+<h2 id="intro">Intro</h2>
+<!-- /wp:heading -->
+<!-- wp:paragraph --><p>x</p><!-- /wp:paragraph -->`);
+  const toc = extractToc(blocks);
+  assert.deepEqual(toc, [
+    { level: 2, text: "Hello & World", id: "hello-world" },
+    { level: 3, text: "Hello & World", id: "hello-world-2" },
+    { level: 2, text: "Intro", id: "intro" },
+  ]);
+  const h = blocks.filter((b) => b.blockName === "core/heading");
+  assert.match(h[0]!.innerHTML, /<h2 id="hello-world">/);
+  assert.equal(h[1]!.attrs.anchor, "hello-world-2");
+  assert.deepEqual(extractToc(blocks), toc);
+});
