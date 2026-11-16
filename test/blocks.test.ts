@@ -86,3 +86,20 @@ test("renderBlocks applies custom renderers and falls back to passthrough", () =
   assert.match(html, /<p>Left<\/p>/);
   assert.match(html, /<a href="\/contact">CTA<\/a>/);
 });
+
+test("renderGallery wraps image children in a figure grid with escaped captions", async () => {
+  const { renderGallery } = await import("../src/index.js");
+  const html = `<!-- wp:gallery {"columns":2} --><figure class="wp-block-gallery"><!-- wp:image -->
+<figure class="wp-block-image"><img src="/a.jpg" alt="a"/><figcaption>Hi &lt;b&gt; <em>x</em></figcaption></figure>
+<!-- /wp:image --><!-- wp:image -->
+<figure class="wp-block-image"><img src="javascript:alert(1)" alt="b"/></figure>
+<!-- /wp:image --></figure><!-- /wp:gallery -->`;
+  const [out] = renderBlocks(parseBlocks(html), {
+    renderers: { "core/gallery": renderGallery, "core/image": renderImage },
+    fallback: passthroughHtml,
+  });
+  assert.equal(
+    out,
+    `<figure class="wp-block-gallery" style="--gallery-columns:2"><figure class="wp-block-gallery-item"><img src="/a.jpg" alt="a" loading="lazy"><figcaption>Hi &lt;b&gt; x</figcaption></figure></figure>`,
+  );
+});

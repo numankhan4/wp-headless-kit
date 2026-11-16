@@ -87,6 +87,8 @@ export default async function Post({ params }: { params: { slug: string } }) {
 
 `renderImage` is a ready-made `core/image` string renderer (register it under `"core/image"`): it outputs an `<img>` with escaped `src`/`alt`, `width`, `height` and `loading="lazy"`, and drops unsafe URL schemes.
 
+`renderGallery` renders `core/gallery` (register under `"core/gallery"` next to `renderImage`) as a `<figure class="wp-block-gallery">` grid; each rendered child image gets its own `<figure>` with an escaped `<figcaption>`.
+
 ### Fetching drafts with Application Passwords
 
 Create an Application Password in your WordPress profile, then pass `basicAuth` as a header. It uses `TextEncoder` and `btoa`, so it works in Node and edge runtimes. Keep credentials server-side.
