@@ -22,4 +22,5 @@ export type { BlockRenderer, RenderOptions } from "./blocks/render.js";
 export { renderEmbed, parseVideoUrl } from "./blocks/embed.js";
 export { renderImage } from "./blocks/image.js";
 export { buildMenuTree } from "./utils/menu.js";
-export { decodeEntities, escapeHtml, stripTags, toExcerpt, readingTime } from "./utils/html.js";
+export { decodeEntities, escapeHtml, stripTags, toExcerpt, readingTime, sanitizeHtml } from "./utils/html.js";
+export type { SanitizeHtmlOptions } from "./utils/html.js";
