@@ -19,6 +19,7 @@ export { parseBlocks } from "./blocks/parse.js";
 export type { ParsedBlock } from "./blocks/parse.js";
 export { renderBlocks, passthroughHtml } from "./blocks/render.js";
 export type { BlockRenderer, RenderOptions } from "./blocks/render.js";
+export { renderEmbed, parseVideoUrl } from "./blocks/embed.js";
 export { renderImage } from "./blocks/image.js";
 export { renderGallery } from "./blocks/gallery.js";
 export { buildMenuTree } from "./utils/menu.js";
