@@ -12,7 +12,7 @@ Typed, zero-dependency building blocks for **headless WordPress** front ends (Ne
 - **`WPClient`**: a small typed client for the WP REST API, with pagination headers, slug lookups and typed errors.
 - **`yoastToMetadata`**: turns Yoast's `yoast_head_json` into a Next.js-compatible `Metadata` object and rewrites the CMS origin to your front-end origin.
 - **`parseBlocks` / `renderBlocks`**: parse Gutenberg's serialized block markup and render it with your own component map.
-- **HTML utilities**: `decodeEntities`, `toExcerpt`, `readingTime`, `stripTags`, `escapeHtml`.
+- **HTML utilities**: `decodeEntities`, `toExcerpt`, `readingTime`, `stripTags`, `escapeHtml`, `sanitizeHtml(html, { allowTags?, allowAttrs? })` (allowlist sanitizer; strips scripts, event handlers and `javascript:` URLs).
 
 ## Install
 
