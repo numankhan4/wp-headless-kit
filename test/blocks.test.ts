@@ -110,3 +110,17 @@ test("extractToc returns headings and adds unique slug ids", async () => {
   assert.equal(h[1]!.attrs.anchor, "hello-world-2");
   assert.deepEqual(extractToc(blocks), toc);
 });
+
+import { renderEmbed } from "../src/index.js";
+
+test("renderEmbed renders YouTube/Vimeo as thumbnail links and falls back otherwise", () => {
+  const mk = (url: string) =>
+    parseBlocks(`<!-- wp:embed {"url":"${url}"} -->\n<figure>saved</figure>\n<!-- /wp:embed -->`);
+  const opts = { renderers: { "core/embed": renderEmbed }, fallback: passthroughHtml };
+  const yt = renderBlocks(mk("https://youtu.be/dQw4w9WgXcQ"), opts)[0]!;
+  assert.match(yt, /i\.ytimg\.com\/vi\/dQw4w9WgXcQ\/hqdefault\.jpg/);
+  assert.ok(!yt.includes("<iframe"));
+  assert.match(renderBlocks(mk("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), opts)[0]!, /watch\?v=dQw4w9WgXcQ/);
+  assert.match(renderBlocks(mk("https://vimeo.com/123456"), opts)[0]!, /vimeo\.com\/123456/);
+  assert.match(renderBlocks(mk("https://example.com/x"), opts)[0]!, /saved/);
+});
