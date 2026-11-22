@@ -86,6 +86,8 @@ export default async function Post({ params }: { params: { slug: string } }) {
 | `renderEmbed` / `parseVideoUrl(url)` | `core/embed` renderer: YouTube/Vimeo become a thumbnail link (no iframe); other providers keep saved HTML. Use `renderers: { "core/embed": renderEmbed }`. |
 | `renderBlocks(blocks, { renderers, fallback })`                                         | Render the tree to strings, React nodes, etc.                                                                                                                                                                                                                                                                                                                                                                        |
 
+`extractToc(blocks)` returns `{ level, text, id }[]` for every `core/heading` block and mutates the tree to add a unique slug `id` (`attrs.anchor` and the HTML `id` attribute) to headings without one; duplicates get `-2`, `-3`, … suffixes.
+
 `renderImage` is a ready-made `core/image` string renderer (register it under `"core/image"`): it outputs an `<img>` with escaped `src`/`alt`, `width`, `height` and `loading="lazy"`, and drops unsafe URL schemes.
 
 ### Fetching drafts with Application Passwords
